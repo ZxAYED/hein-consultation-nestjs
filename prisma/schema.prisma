@@ -1,18 +1,18 @@
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
+  provider   = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model User {
-  id                        String    @id @default(uuid())
+  id                        String     @id @default(uuid())
   firstName                 String
   lastName                  String
-  email                     String    @unique
-  role                      UserRole  @default(CUSTOMER)
+  email                     String     @unique
+  role                      UserRole   @default(CUSTOMER)
   companyName               String
   image                     String?
   street                    String?
@@ -28,14 +28,92 @@ model User {
   registrationOtpExpireIn   DateTime?
   loginOtp                  String?
   loginOtpExpireIn          DateTime?
-  isVerified                Boolean   @default(false)
-  isBlocked                 Boolean   @default(false)
-  isDeleted                 Boolean   @default(false)
-  createdAt                 DateTime  @default(now())
-  updatedAt                 DateTime  @updatedAt
+  isVerified                Boolean    @default(false)
+  isBlocked                 Boolean    @default(false)
+  isDeleted                 Boolean    @default(false)
+  createdAt                 DateTime   @default(now())
+  updatedAt                 DateTime   @updatedAt
+  documents                 Document[]
+  invoices                  Invoice[]
+  blogs                     Blog[]
+}
+
+model Document {
+  id           String         @id @default(uuid())
+  customerId   String
+  name         String
+  status       DocumentStatus
+  type         DocumentType
+  documentLink String
+  tags         String[]
+  description  String
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  customer     User           @relation(fields: [customerId], references: [id])
+}
+
+model Invoice {
+  id          String             @id @default(uuid())
+  invoiceId   String?            @unique
+  clientName  String
+  email       String
+  companyName String
+  amount      Float
+  issuedBy    String
+  status      InvoiceStatus
+  paymentType InvoicePaymentType
+  createdDate DateTime
+  dueDate     DateTime
+  customer    User               @relation(fields: [email], references: [email])
+}
+
+model Blog {
+  id          String     @id @default(uuid())
+  title       String
+  adminId     String
+  slug        String     @unique
+  excerpt     String
+  image       String
+  content     String
+  status      BlogStatus
+  publishDate DateTime
+  categories  String[]
+  tags        String[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  admin       User       @relation(fields: [adminId], references: [id])
+}
+
+enum BlogStatus {
+  Schedule
+  Publish
 }
 
 enum UserRole {
   CUSTOMER
   ADMIN
+}
+
+enum DocumentType {
+  Invoice
+  Appointment
+  Profile
+  Security
+}
+
+enum DocumentStatus {
+  Open
+  InReview
+  Approved
+}
+
+enum InvoiceStatus {
+  Paid
+  Panding
+  Overdue
+}
+
+enum InvoicePaymentType {
+  Cash
+  BankTransfer
 }
