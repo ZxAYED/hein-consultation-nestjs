@@ -19,10 +19,16 @@ import { AuthGuard } from '../common/guards/auth/auth.guard';
 import { Roles } from 'src/common/decorator/rolesDecorator';
 import { ROLE } from './entities/role.entity';
 import { Request } from 'express';
+import { uploadFileToSupabase } from 'src/utils/common/uploadFileToSupabase';
+import multer from 'multer';
+import { ConfigService } from '@nestjs/config';
 
 @Controller('user')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private configService: ConfigService,
+  ) {}
   @UseGuards(AuthGuard)
   @Roles(ROLE.CUSTOMER, ROLE.ADMIN)
   @Get('/me')
@@ -31,8 +37,8 @@ export class UserController {
   }
 
   @Post()
-  @UseInterceptors(FileInterceptor('file'))
-  create(
+  @UseInterceptors(FileInterceptor('file', { storage: multer.memoryStorage() }))
+  async create(
     @Body() body: any,
     @UploadedFile() image?: Express.Multer.File, // এখানে '?' দিয়ে optional করা হয়েছে
   ) {
@@ -48,12 +54,16 @@ export class UserController {
 
     if (image) {
       console.log(image);
+      const imageLink = await uploadFileToSupabase(
+        image,
+        this.configService, // <-- important
+        'user-uploads', // optional folder
+      );
+      // console.log('🚀 ~ UserController ~ create ~ imageLink:', imageLink);
+      userRegistrationData.image = imageLink;
     }
 
-    // console.log(userRegistrationData)
-
     return this.userService.create(userRegistrationData);
-    // return { parsed, file: image || null };
   }
 
   @Post('/resend-register-otp')
