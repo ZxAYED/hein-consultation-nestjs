@@ -28,6 +28,8 @@ model User {
   registrationOtpExpireIn   DateTime?
   loginOtp                  String?
   loginOtpExpireIn          DateTime?
+  resetPasswordOtp          String?
+  resetPasswordOtpExpireIn  DateTime?
   isVerified                Boolean    @default(false)
   isBlocked                 Boolean    @default(false)
   isDeleted                 Boolean    @default(false)

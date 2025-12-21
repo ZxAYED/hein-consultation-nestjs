@@ -21,7 +21,7 @@ async function bootstrap() {
       'http://localhost:5175',
       'http://localhost:5176',
       '*',
-    ], 
+    ],
   });
   await app.listen(process.env.PORT || 3000);
 }

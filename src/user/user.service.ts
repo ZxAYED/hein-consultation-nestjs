@@ -304,6 +304,125 @@ export class UserService {
     return sendResponse('Profile Information Fetched Successfully', result);
   }
 
+  async changePassword(
+    email: string,
+    oldPassword: string,
+    newPassword: string,
+  ) {
+    const isUserExist = await this.prisma.user.findUnique({
+      where: { email },
+    });
+    if (!isUserExist) {
+      throw new NotFoundException('User not found');
+    }
+
+    const isPasswordMatch = await bcrypt.compare(
+      oldPassword,
+      isUserExist.password,
+    );
+    if (!isPasswordMatch) {
+      throw new BadRequestException('Invalid Password');
+    }
+
+    if (oldPassword === newPassword) {
+      throw new BadRequestException(
+        'New Password cannot be same as old password',
+      );
+    }
+
+    const hashPassword = await bcrypt.hash(newPassword, 10);
+    // console.log(hashPassword)
+    await this.prisma.user.update({
+      where: { email },
+      data: {
+        password: hashPassword,
+      },
+    });
+    return sendResponse('Password Changed Successfully');
+  }
+
+  async forgottenPassword(email: string) {
+    const isUserExist = await this.prisma.user.findUnique({
+      where: { email },
+    });
+    if (!isUserExist) {
+      throw new NotFoundException('User not found');
+    }
+
+    const generateOtp = () =>
+      Math.floor(100000 + Math.random() * 900000).toString();
+    const otp = generateOtp();
+    // console.log('Generated OTP:', otp);
+
+    // OTP validity 10 minutes
+    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
+    await this.prisma.user.update({
+      where: { email },
+      data: {
+        resetPasswordOtp: otp,
+        resetPasswordOtpExpireIn: otpExpiry,
+      },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+      },
+    });
+    // Generate email HTML
+    const htmlText = generateOtpEmailTemplate(otp);
+
+    // Send verification email
+    await sendVerificationEmail(
+      email, // user email
+      'Reset your password',
+      htmlText,
+    );
+
+    return sendResponse(
+      'Check your email to reset your password, You have 10 minutes to verify. If you did not receive the email, please check your spam folder.',
+    );
+  }
+
+  async verifyForgottenPasswordOtp(
+    email: string,
+    otp: string,
+    newPassword: string,
+  ) {
+    const isUserExist = await this.prisma.user.findUnique({
+      where: { email },
+    });
+    if (!isUserExist) {
+      throw new NotFoundException('User not found');
+    }
+    if (isUserExist.resetPasswordOtp !== otp) {
+      throw new BadRequestException('Invalid OTP');
+    }
+    if ((isUserExist.resetPasswordOtpExpireIn as Date) < new Date()) {
+      throw new BadRequestException('OTP Expired');
+    }
+
+    const hashPassword = await bcrypt.hash(newPassword, 10);
+    // console.log(hashPassword)
+    await this.prisma.user.update({
+      where: { email },
+      data: {
+        password: hashPassword,
+        resetPasswordOtp: null,
+        resetPasswordOtpExpireIn: null,
+      },
+    });
+    return sendResponse('Password Changed Successfully');
+  }
+
+  async updateProfile(id: string, data: UpdateUserDto) {
+    const result = await this.prisma.user.update({
+      where: { id },
+      data,
+    });
+    return sendResponse('Profile Updated Successfully', result);
+  }
+
   findAll() {
     return `This action returns all user`;
   }

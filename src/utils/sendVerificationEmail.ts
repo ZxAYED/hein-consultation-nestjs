@@ -5,18 +5,28 @@ export async function sendVerificationEmail(
   subject: string,
   html: string, // এখন parameter HTML
 ) {
+  const smtpUser = process.env.SMTP_USER;
+  const smtpPass = process.env.SMTP_PASS;
+  const smtpHost = process.env.SMTP_HOST ?? 'smtp.gmail.com';
+  const smtpPort = Number(process.env.SMTP_PORT ?? 587);
+  const smtpFrom = process.env.SMTP_FROM ?? smtpUser;
+
+  if (!smtpUser || !smtpPass || !smtpFrom || Number.isNaN(smtpPort)) {
+    throw new Error('SMTP configuration missing');
+  }
+
   const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com',
-    port: 587,
+    host: smtpHost,
+    port: smtpPort,
     secure: false,
     auth: {
-      user: 'mdhumayunkabirbd333@gmail.com',
-      pass: 'mzmzzgsqgcslgsid',
+      user: smtpUser,
+      pass: smtpPass,
     },
   });
 
   const mailOptions = {
-    from: 'mdhumayunkabirbd333@gmail.com',
+    from: smtpFrom,
     to,
     subject,
     html, // এখানে text নয়, html ব্যবহার হবে
@@ -26,8 +36,9 @@ export async function sendVerificationEmail(
     const info = await transporter.sendMail(mailOptions);
     console.log('Email sent:', info.response);
     return { success: true, info };
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Email error:', error);
-    return { success: false, error };
+    const message = error instanceof Error ? error.message : 'Email error';
+    return { success: false, error: message };
   }
 }

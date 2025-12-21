@@ -1,4 +1,4 @@
-export const ROLE ={
-    CUSTOMER: 'CUSTOMER',
-    ADMIN: 'ADMIN'
-}
+export const ROLE = {
+  CUSTOMER: 'CUSTOMER',
+  ADMIN: 'ADMIN',
+};
