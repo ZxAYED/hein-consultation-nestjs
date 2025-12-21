@@ -5,29 +5,28 @@ export async function sendVerificationEmail(
   subject: string,
   html: string, // এখন parameter HTML
 ) {
+  const user = process.env.SMTP_USER;
+  const pass = process.env.SMTP_PASS;
+  if (!user || !pass) {
+    throw new Error('SMTP environment variables missing');
+  }
+
   const transporter = nodemailer.createTransport({
     host: 'smtp.gmail.com',
     port: 587,
     secure: false,
     auth: {
-      user: 'mdhumayunkabirbd333@gmail.com',
-      pass: 'mzmzzgsqgcslgsid',
+      user,
+      pass,
     },
   });
 
   const mailOptions = {
-    from: 'mdhumayunkabirbd333@gmail.com',
+    from: user,
     to,
     subject,
     html, // এখানে text নয়, html ব্যবহার হবে
   };
 
-  try {
-    const info = await transporter.sendMail(mailOptions);
-    console.log('Email sent:', info.response);
-    return { success: true, info };
-  } catch (error) {
-    console.error('Email error:', error);
-    return { success: false, error };
-  }
+  await transporter.sendMail(mailOptions);
 }

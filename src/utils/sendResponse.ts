@@ -1,4 +1,4 @@
-export function sendResponse(message: string, data?: any) {
+export function sendResponse(message: string, data?: unknown) {
   if (data) {
     return {
       success: true,
