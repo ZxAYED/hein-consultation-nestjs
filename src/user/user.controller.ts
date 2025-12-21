@@ -11,6 +11,7 @@ import {
   UseGuards,
   Req,
   BadRequestException,
+  Query,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -118,23 +119,23 @@ export class UserController {
   @Patch('update-profile')
   @UseInterceptors(FileInterceptor('file', { storage: multer.memoryStorage() }))
   async updateProfile(
-  @Req() req: Request & { user: any },
-  @Body() body?: any,
+    @Req() req: Request & { user: any },
+    @Body() body?: any,
     @UploadedFile() image?: Express.Multer.File,
   ) {
-  let userUpdateData: any = {};
+    let userUpdateData: any = {};
 
     // 🟢 BODY OPTIONAL
     if (body?.data) {
       try {
-      const parsed = JSON.parse(body.data);
-      userUpdateData = { ...parsed };
-    } catch (err) {
+        const parsed = JSON.parse(body.data);
+        userUpdateData = { ...parsed };
+      } catch (err) {
         throw new BadRequestException('Invalid JSON format in data field');
       }
     }
 
-  // 🟢 IMAGE OPTIONAL
+    // 🟢 IMAGE OPTIONAL
     if (image) {
       const imageLink = await uploadFileToSupabase(
         image,
@@ -144,16 +145,38 @@ export class UserController {
       userUpdateData.image = imageLink;
     }
 
-  // ❌ nothing provided
+    // ❌ nothing provided
     if (Object.keys(userUpdateData).length === 0) {
       throw new BadRequestException('No update data provided');
     }
 
     return this.userService.updateProfile(req.user.id, userUpdateData);
   }
+
+  @Patch('block-user/:id')
+  @UseGuards(AuthGuard)
+  @Roles(ROLE.ADMIN)
+  blockUser(@Param('id') id: string) {
+    return this.userService.blockUser(id);
+  }
+
+  @Patch('unblock-user/:id')
+  @UseGuards(AuthGuard)
+  @Roles(ROLE.ADMIN)
+  unblockUser(@Param('id') id: string) {
+    return this.userService.unblockUser(id);
+  }
+
+  @Patch('delete-user/:id')
+  @UseGuards(AuthGuard)
+  @Roles(ROLE.ADMIN)
+  deleteUser(@Param('id') id: string) {
+    return this.userService.deleteUser(id);
+  }
+
   @Get()
-  findAll() {
-    return this.userService.findAll();
+  findAll(@Query('page') page?: number, @Query('limit') limit?: number) {
+    return this.userService.findAll(page, limit);
   }
 
   @Get(':id')

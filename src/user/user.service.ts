@@ -1,8 +1,6 @@
-import { User } from './entities/user.entity';
 import {
   Injectable,
   NotFoundException,
-  Controller,
   ConflictException,
   BadRequestException,
   UnauthorizedException,
@@ -15,7 +13,7 @@ import { generateOtpEmailTemplate } from 'src/utils/generateOtpEmailTemplate';
 import { PrismaService } from 'src/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
-import { first } from 'rxjs';
+import { getPagination } from 'src/common/utils/pagination';
 @Injectable()
 export class UserService {
   constructor(
@@ -423,8 +421,54 @@ export class UserService {
     return sendResponse('Profile Updated Successfully', result);
   }
 
-  findAll() {
-    return `This action returns all user`;
+  async blockUser(id: string) {
+    await this.prisma.user.update({
+      where: { id },
+      data: {
+        isBlocked: true,
+      },
+    });
+    return sendResponse('User Blocked Successfully');
+  }
+  async unblockUser(id: string) {
+    await this.prisma.user.update({
+      where: { id },
+      data: {
+        isBlocked: false,
+      },
+    });
+    return sendResponse('User Unblocked Successfully');
+  }
+
+  async deleteUser(id: string) {
+    await this.prisma.user.delete({
+      where: { id },
+    });
+    return sendResponse('User Deleted Successfully');
+  }
+
+  async findAll(page?: number, limit?: number) {
+    const totalItems = await this.prisma.user.count({
+      where: {
+        isBlocked: false,
+        isDeleted: false,
+      },
+    });
+
+    const { skip, take, meta } = getPagination(page, limit, totalItems);
+
+    const data = await this.prisma.user.findMany({
+      where: {
+        isBlocked: false,
+        isDeleted: false,
+      },
+      skip,
+      take,
+    });
+
+   
+
+   return sendResponse('All user fetched successfully', { data, meta });
   }
 
   findOne(id: number) {
