@@ -1,7 +1,5 @@
-
 generator client {
   provider = "prisma-client-js"
- 
 }
 
 datasource db {
@@ -69,8 +67,8 @@ model ScheduleSlot {
 }
 
 model Appointment {
-  id            String      @id @default(uuid())
-  appointmentNo String      @unique
+  id            String @id @default(uuid())
+  appointmentNo String @unique
   userId        String
   serviceName   String
 
@@ -96,12 +94,15 @@ model Document {
   appointmentId String?
   invoiceId     String?
 
-  name        String
-  type        DocumentType
-  status      DocumentStatus
-  fileUrl     String
-  tags        String[]
-  description String?
+  name          String
+  type          DocumentType
+  status        DocumentStatus
+  fileUrl       String
+  fileSizeBytes Int            @default(0)
+  fileFormat    String         @default("unknown")
+  fileMimeType  String         @default("application/octet-stream")
+  tags          String[]
+  description   String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -145,6 +146,7 @@ model Invoice {
   @@unique([appointmentId])
   @@index([appointmentId])
 }
+
 model Blog {
   id          String         @id @default(uuid())
   title       String

@@ -3,8 +3,8 @@ function generateSlug(title: string): string {
     .toLowerCase()
     .trim()
     .replace(/[^\w\s-]/g, '') // remove special characters
-    .replace(/\s+/g, '-')     // replace spaces with dash
-    .replace(/--+/g, '-');    // replace multiple dashes
+    .replace(/\s+/g, '-') // replace spaces with dash
+    .replace(/--+/g, '-'); // replace multiple dashes
 }
 
 function formatDate(date: Date): string {
@@ -15,7 +15,10 @@ function formatDate(date: Date): string {
   return `${yyyy}${mm}${dd}`;
 }
 
-export async function generateUniqueSlug(title: string, blogService: any): Promise<string> {
+export async function generateUniqueSlug(
+  title: string,
+  blogService: any,
+): Promise<string> {
   const baseSlug = generateSlug(title);
   let slug = baseSlug;
   let counter = 1;

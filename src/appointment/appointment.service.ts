@@ -23,7 +23,6 @@ import {
   CreateAppointmentDto,
   ServiceNames,
 } from './dto/create-appointment.dto';
-import { GetAppointmentsQueryDto } from './dto/get-appointments-query.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
 
 type AppointmentAttachment = {
@@ -299,7 +298,10 @@ export class AppointmentService {
     return sendResponse('Attachments removed successfully', updated);
   }
 
-  async list(query: GetAppointmentsQueryDto, actor: Pick<User, 'id' | 'role'>) {
+  async list(
+    query: { page?: number; limit?: number },
+    actor: Pick<User, 'id' | 'role'>,
+  ) {
     const page = query.page ?? 1;
     const limit = query.limit ?? 10;
     const skip = (page - 1) * limit;
@@ -308,22 +310,6 @@ export class AppointmentService {
     const where: Prisma.AppointmentWhereInput = {};
     if (!isAdmin) {
       where.userId = actor.id;
-    }
-    if (query.status) {
-      where.status = query.status;
-    }
-    if (query.serviceName) {
-      where.serviceName = query.serviceName;
-    }
-    if (query.fromDate || query.toDate) {
-      const range: Prisma.DateTimeFilter = {};
-      if (query.fromDate) {
-        range.gte = this.parseDayStart(query.fromDate);
-      }
-      if (query.toDate) {
-        range.lte = this.parseDayEnd(query.toDate);
-      }
-      where.scheduledAt = range;
     }
 
     const [total, data] = await this.prisma.$transaction([
@@ -345,6 +331,25 @@ export class AppointmentService {
       data,
       meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
     });
+  }
+
+  async listAll(actor: Pick<User, 'id' | 'role'>) {
+    const isAdmin = actor.role === UserRole.ADMIN;
+    const where: Prisma.AppointmentWhereInput = isAdmin
+      ? {}
+      : { userId: actor.id };
+
+    const data = await this.prisma.appointment.findMany({
+      where,
+      orderBy: { scheduledAt: 'desc' },
+      include: {
+        slot: {
+          select: { startTime: true, endTime: true, status: true },
+        },
+      },
+    });
+
+    return sendResponse('Appointments retrieved successfully', data);
   }
 
   async getOne(id: string, actor: Pick<User, 'id' | 'role'>) {
