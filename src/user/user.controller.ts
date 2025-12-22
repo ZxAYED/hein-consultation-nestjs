@@ -11,6 +11,7 @@ import {
   UseGuards,
   Req,
   BadRequestException,
+  Query,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -22,6 +23,7 @@ import { Request } from 'express';
 import { uploadFileToSupabase } from 'src/utils/common/uploadFileToSupabase';
 import multer from 'multer';
 import { ConfigService } from '@nestjs/config';
+import { UserRole } from '@prisma/client';
 
 @Controller('user')
 export class UserController {
@@ -29,6 +31,14 @@ export class UserController {
     private readonly userService: UserService,
     private configService: ConfigService,
   ) {}
+
+  @UseGuards(AuthGuard)
+  @Roles(ROLE.ADMIN)
+  @Get()
+  findAll(@Query('page') page?: number, @Query('limit') limit?: number) {
+    return this.userService.findAll(page, limit);
+  }
+
   @UseGuards(AuthGuard)
   @Roles(ROLE.CUSTOMER, ROLE.ADMIN)
   @Get('/me')
@@ -118,23 +128,23 @@ export class UserController {
   @Patch('update-profile')
   @UseInterceptors(FileInterceptor('file', { storage: multer.memoryStorage() }))
   async updateProfile(
-  @Req() req: Request & { user: any },
-  @Body() body?: any,
+    @Req() req: Request & { user: any },
+    @Body() body?: any,
     @UploadedFile() image?: Express.Multer.File,
   ) {
-  let userUpdateData: any = {};
+    let userUpdateData: any = {};
 
     // 🟢 BODY OPTIONAL
     if (body?.data) {
       try {
-      const parsed = JSON.parse(body.data);
-      userUpdateData = { ...parsed };
-    } catch (err) {
+        const parsed = JSON.parse(body.data);
+        userUpdateData = { ...parsed };
+      } catch (err) {
         throw new BadRequestException('Invalid JSON format in data field');
       }
     }
 
-  // 🟢 IMAGE OPTIONAL
+    // 🟢 IMAGE OPTIONAL
     if (image) {
       const imageLink = await uploadFileToSupabase(
         image,
@@ -144,16 +154,40 @@ export class UserController {
       userUpdateData.image = imageLink;
     }
 
-  // ❌ nothing provided
+    // ❌ nothing provided
     if (Object.keys(userUpdateData).length === 0) {
       throw new BadRequestException('No update data provided');
     }
 
     return this.userService.updateProfile(req.user.id, userUpdateData);
   }
-  @Get()
-  findAll() {
-    return this.userService.findAll();
+
+  @Patch('block-user/:id')
+  @UseGuards(AuthGuard)
+  @Roles(ROLE.ADMIN)
+  blockUser(@Param('id') id: string) {
+    return this.userService.blockUser(id);
+  }
+
+  @Patch('unblock-user/:id')
+  @UseGuards(AuthGuard)
+  @Roles(ROLE.ADMIN)
+  unblockUser(@Param('id') id: string) {
+    return this.userService.unblockUser(id);
+  }
+
+  @Patch('change-role/:id')
+  @UseGuards(AuthGuard)
+  @Roles(ROLE.ADMIN)
+  changeRole(@Param('id') id: string, @Body('role') role: UserRole) {
+    return this.userService.changeRole(id, role);
+  }
+
+  @Delete('delete-user/:id')
+  @UseGuards(AuthGuard)
+  @Roles(ROLE.ADMIN)
+  deleteUser(@Param('id') id: string) {
+    return this.userService.deleteUser(id);
   }
 
   @Get(':id')
