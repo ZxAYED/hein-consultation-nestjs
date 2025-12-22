@@ -1,11 +1,18 @@
 import { ConfigService } from '@nestjs/config';
 import { getSupabaseClient } from './supabaseClient';
 
-export const uploadFileToSupabase = async (
+type UploadResult = {
+  fileUrl: string;
+  filePath: string;
+  fileName: string;
+  originalName: string;
+};
+
+const uploadToSupabase = async (
   file: Express.Multer.File,
   configService: ConfigService,
   folder = 'files',
-) => {
+): Promise<UploadResult> => {
   if (!file?.buffer) throw new Error('File not provided');
 
   const supabase = getSupabaseClient(configService);
@@ -24,5 +31,27 @@ export const uploadFileToSupabase = async (
 
   const { data } = supabase.storage.from('attachments').getPublicUrl(filePath);
 
-  return data.publicUrl;
+  return {
+    fileUrl: data.publicUrl,
+    filePath,
+    fileName: safeFileName,
+    originalName: file.originalname,
+  };
+};
+
+export const uploadFileToSupabase = async (
+  file: Express.Multer.File,
+  configService: ConfigService,
+  folder = 'files',
+) => {
+  const result = await uploadToSupabase(file, configService, folder);
+  return result.fileUrl;
+};
+
+export const uploadFileToSupabaseWithMeta = async (
+  file: Express.Multer.File,
+  configService: ConfigService,
+  folder = 'files',
+) => {
+  return uploadToSupabase(file, configService, folder);
 };

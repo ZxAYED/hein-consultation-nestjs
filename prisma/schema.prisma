@@ -79,6 +79,7 @@ model Appointment {
   meetingType MeetingType
   status      AppointmentStatus
   note        String?
+  attachments Json?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

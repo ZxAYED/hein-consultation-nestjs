@@ -1,13 +1,13 @@
 import { AppointmentStatus } from '@prisma/client';
 import {
-    IsEnum,
-    IsIn,
-    IsInt,
-    IsOptional,
-    IsString,
-    Matches,
-    Max,
-    Min,
+  IsEnum,
+  IsIn,
+  IsInt,
+  IsOptional,
+  IsString,
+  Matches,
+  Max,
+  Min,
 } from 'class-validator';
 import type { ServiceName } from 'src/schedule/entities/service-name.entity';
 import { SERVICE_NAME_VALUES } from 'src/schedule/entities/service-name.entity';

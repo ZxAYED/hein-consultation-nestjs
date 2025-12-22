@@ -31,8 +31,9 @@ export class AuthGuard implements CanActivate {
       throw new UnauthorizedException('Unauthorized');
     }
 
-    const decoded = this.jwtService.verify(token);
-    // console.log("🚀 ~ AuthGuard ~ canActivate ~ decoded:", decoded)
+    const rawToken = authorization.startsWith('Bearer ')
+      ? authorization.slice(7)
+      : authorization;
 
     const decoded: unknown = this.jwtService.decode(rawToken);
     if (!decoded || typeof decoded !== 'object' || decoded === null) {
@@ -79,9 +80,7 @@ export class AuthGuard implements CanActivate {
       requiredRoles.length > 0 &&
       !requiredRoles.includes(user.role)
     ) {
-      throw new ForbiddenException(
-        `${user.role} is not allowed to access this route`,
-      );
+      throw new ForbiddenException('Access denied');
     }
 
     return true;

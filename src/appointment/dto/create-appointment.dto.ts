@@ -29,3 +29,9 @@ export class CreateAppointmentDto {
   @IsString()
   note?: string;
 }
+export const ServiceNames = [
+  'SAP_CONSULTING_SESSION',
+  'FINANCIAL_AUDIT',
+  'SAP_SYSTEM_OPTIMIZATION',
+  'PROCESS_AUTOMATION',
+];
