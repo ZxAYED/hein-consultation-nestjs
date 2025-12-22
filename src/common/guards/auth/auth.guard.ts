@@ -51,7 +51,7 @@ export class AuthGuard implements CanActivate {
     ]);
 
     if (requiredRoles && requiredRoles.length > 0 && !requiredRoles.includes(user.role)) {
-      throw new ForbiddenException('Access denied');
+      throw new ForbiddenException(`${user.role} is not allowed to access this route`);
     }
 
     return true;
