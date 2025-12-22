@@ -1,6 +1,7 @@
 
 generator client {
   provider = "prisma-client-js"
+ 
 }
 
 datasource db {
@@ -46,7 +47,7 @@ model User {
 model ScheduleSlot {
   id String @id @default(uuid())
 
-  serviceName ServiceName
+  serviceName String
 
   date      DateTime // normalized day (e.g. 2025-12-19T00:00:00)
   startTime DateTime
@@ -71,13 +72,14 @@ model Appointment {
   id            String      @id @default(uuid())
   appointmentNo String      @unique
   userId        String
-  serviceName   ServiceName
+  serviceName   String
 
   slotId      String            @unique
   scheduledAt DateTime
   meetingType MeetingType
   status      AppointmentStatus
   note        String?
+  attachments Json?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -143,7 +145,6 @@ model Invoice {
   @@unique([appointmentId])
   @@index([appointmentId])
 }
-
 model Blog {
   id          String         @id @default(uuid())
   title       String
@@ -240,11 +241,4 @@ enum InvoicePaymentType {
 enum BlogStatus {
   Schedule
   Publish
-}
-
-enum ServiceName {
-  SAP_CONSULTING_SESSION
-  FINANCIAL_AUDIT
-  SAP_SYSTEM_OPTIMIZATION
-  PROCESS_AUTOMATION
 }

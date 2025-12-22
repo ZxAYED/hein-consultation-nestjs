@@ -1,29 +1,30 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
-  Controller,
-  Get,
-  Post,
+  BadRequestException,
   Body,
-  Patch,
-  Param,
+  Controller,
   Delete,
-  UseInterceptors,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+  Req,
   UploadedFile,
   UseGuards,
-  Req,
-  BadRequestException,
-  Query,
+  UseInterceptors,
 } from '@nestjs/common';
-import { UserService } from './user.service';
-import { UpdateUserDto } from './dto/update-user.dto';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { AuthGuard } from '../common/guards/auth/auth.guard';
-import { Roles } from 'src/common/decorator/rolesDecorator';
-import { ROLE } from './entities/role.entity';
-import { Request } from 'express';
-import { uploadFileToSupabase } from 'src/utils/common/uploadFileToSupabase';
-import multer from 'multer';
 import { ConfigService } from '@nestjs/config';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { UserRole } from '@prisma/client';
+import multer from 'multer';
+import { Roles } from 'src/common/decorator/rolesDecorator';
+import { AuthGuard } from 'src/common/guards/auth/auth.guard';
+import { uploadFileToSupabase } from 'src/utils/common/uploadFileToSupabase';
+import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
+import { ROLE } from './entities/role.entity';
+import { UserService } from './user.service';
 
 @Controller('user')
 export class UserController {
@@ -42,24 +43,23 @@ export class UserController {
   @UseGuards(AuthGuard)
   @Roles(ROLE.CUSTOMER, ROLE.ADMIN)
   @Get('/me')
-  me(@Req() req: Request & { user: any }) {
-    return this.userService.getMyProfileInfo(req?.user?.id);
+  me(@Req() req: Request & { user: { id: string } }) {
+    return this.userService.getMyProfileInfo(req.user.id);
   }
 
   @Post()
   @UseInterceptors(FileInterceptor('file', { storage: multer.memoryStorage() }))
   async create(
-    @Body() body: any,
-    @UploadedFile() image?: Express.Multer.File, // এখানে '?' দিয়ে optional করা হয়েছে
+    @Body() body: { data: string },
+    @UploadedFile() image?: Express.Multer.File,
   ) {
-    const data = body.data;
-    const parsed = JSON.parse(data);
-    let userRegistrationData: any = {};
+    const parsed = JSON.parse(body.data) as unknown;
+    let userRegistrationData: Partial<CreateUserDto> & { image?: string } = {};
 
-    // console.log(parsed);
-
-    if (parsed) {
-      userRegistrationData = { ...parsed };
+    if (parsed && typeof parsed === 'object') {
+      userRegistrationData = parsed as Partial<CreateUserDto> & {
+        image?: string;
+      };
     }
 
     if (image) {
@@ -73,7 +73,7 @@ export class UserController {
       userRegistrationData.image = imageLink;
     }
 
-    return this.userService.create(userRegistrationData);
+    return this.userService.create(userRegistrationData as CreateUserDto);
   }
 
   @Post('/resend-register-otp')

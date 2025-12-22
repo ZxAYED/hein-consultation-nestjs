@@ -9,13 +9,17 @@ export async function sendVerificationEmail(
 ) {
   const smtpUser = ConfigService.get<string>('SMTP_USER');
   // const smtpUser = process.env.SMTP_USER;
-  const smtpPass =ConfigService.get<string>('SMTP_PASS'); // const smtpPass = process.env.SMTP_PASS;
+  const smtpPass = ConfigService.get<string>('SMTP_PASS'); // const smtpPass = process.env.SMTP_PASS;
   const smtpHost = ConfigService.get<string>('SMTP_HOST') ?? 'smtp.gmail.com';
   const smtpPort = Number(ConfigService.get<string>('SMTP_PORT') ?? 587);
   const smtpFrom = ConfigService.get<string>('SMTP_FROM') ?? smtpUser;
 
   if (!smtpUser || !smtpPass || !smtpFrom || Number.isNaN(smtpPort)) {
-    throw new Error('SMTP configuration missing');
+    return {
+      success: false,
+      skipped: true,
+      error: 'SMTP configuration missing',
+    };
   }
 
   const transporter = nodemailer.createTransport({

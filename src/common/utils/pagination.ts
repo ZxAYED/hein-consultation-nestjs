@@ -14,9 +14,7 @@ export function getPagination(
   // 👇 current page e koyta value thakar kotha
   const remainingItems = totalItems - skip;
   const pageItemCount =
-    remainingItems >= perPage
-      ? perPage
-      : Math.max(remainingItems, 0);
+    remainingItems >= perPage ? perPage : Math.max(remainingItems, 0);
 
   return {
     skip,

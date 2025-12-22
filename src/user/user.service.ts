@@ -1,21 +1,21 @@
-import { ConfigService } from '@nestjs/config';
 import {
+  BadRequestException,
+  ConflictException,
   Injectable,
   NotFoundException,
-  ConflictException,
-  BadRequestException,
   UnauthorizedException,
 } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
+import { UserRole } from '@prisma/client';
+import * as bcrypt from 'bcrypt';
+import { getPagination } from 'src/common/utils/pagination';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { generateOtpEmailTemplate } from 'src/utils/generateOtpEmailTemplate';
 import { sendResponse } from 'src/utils/sendResponse';
 import { sendVerificationEmail } from 'src/utils/sendVerificationEmail';
-import { generateOtpEmailTemplate } from 'src/utils/generateOtpEmailTemplate';
-import { PrismaService } from 'src/prisma/prisma.service';
-import * as bcrypt from 'bcrypt';
-import { JwtService } from '@nestjs/jwt';
-import { getPagination } from 'src/common/utils/pagination';
-import { UserRole } from '@prisma/client';
+import { CreateUserDto } from './dto/create-user.dto';
+import { UpdateUserDto } from './dto/update-user.dto';
 @Injectable()
 export class UserService {
   constructor(
@@ -45,7 +45,6 @@ export class UserService {
     // console.log('OTP valid until:', otpExpiry);
 
     const hashPassword = await bcrypt.hash(createUserDto.password, 10);
-    console.log('🚀 ~ UserService ~ create ~ hashPassword:', hashPassword);
 
     const userRegistrationData = {
       ...createUserDto,
@@ -462,7 +461,7 @@ export class UserService {
       where: { id },
       data: {
         isDeleted: true,
-      }
+      },
     });
     return sendResponse('User Deleted Successfully');
   }
@@ -503,7 +502,8 @@ export class UserService {
     return `This action returns a #${id} user`;
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
+  update(id: number, _updateUserDto: UpdateUserDto) {
+    void _updateUserDto;
     return `This action updates a #${id} user`;
   }
 

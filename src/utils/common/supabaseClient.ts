@@ -1,5 +1,5 @@
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { ConfigService } from '@nestjs/config';
+import { createClient } from '@supabase/supabase-js';
 
 export let supabase: ReturnType<typeof createClient> | undefined;
 
@@ -15,5 +15,5 @@ export const getSupabaseClient = (configService: ConfigService) => {
     supabase = createClient(url, key);
   }
 
-  return supabase as SupabaseClient;
+  return supabase;
 };
