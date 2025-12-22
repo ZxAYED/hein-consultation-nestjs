@@ -1,16 +1,17 @@
-import { ServiceName } from '@prisma/client';
 import {
-  IsEnum,
+  IsIn,
   IsInt,
   IsNotEmpty,
   IsString,
   Matches,
   Min,
 } from 'class-validator';
+import type { ServiceName } from '../entities/service-name.entity';
+import { SERVICE_NAME_VALUES } from '../entities/service-name.entity';
 
 export class GenerateSlotsDto {
   @IsNotEmpty()
-  @IsEnum(ServiceName)
+  @IsIn(SERVICE_NAME_VALUES)
   serviceName: ServiceName;
 
   @IsString()

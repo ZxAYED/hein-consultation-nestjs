@@ -1,13 +1,16 @@
-import { AppointmentStatus, ServiceName } from '@prisma/client';
+import { AppointmentStatus } from '@prisma/client';
 import {
-  IsEnum,
-  IsInt,
-  IsOptional,
-  IsString,
-  Matches,
-  Max,
-  Min,
+    IsEnum,
+    IsIn,
+    IsInt,
+    IsOptional,
+    IsString,
+    Matches,
+    Max,
+    Min,
 } from 'class-validator';
+import type { ServiceName } from 'src/schedule/entities/service-name.entity';
+import { SERVICE_NAME_VALUES } from 'src/schedule/entities/service-name.entity';
 
 export class GetAppointmentsQueryDto {
   @IsOptional()
@@ -26,7 +29,7 @@ export class GetAppointmentsQueryDto {
   status?: AppointmentStatus;
 
   @IsOptional()
-  @IsEnum(ServiceName)
+  @IsIn(SERVICE_NAME_VALUES)
   serviceName?: ServiceName;
 
   @IsOptional()

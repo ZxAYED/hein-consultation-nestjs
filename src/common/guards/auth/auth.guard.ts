@@ -3,11 +3,12 @@ import {
   ExecutionContext,
   ForbiddenException,
   Injectable,
+  ServiceUnavailableException,
   UnauthorizedException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
-import { User } from '@prisma/client';
+import { Prisma, User } from '@prisma/client';
 import { Request } from 'express';
 import { ROLES_KEY } from 'src/common/decorator/rolesDecorator';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -46,9 +47,22 @@ export class AuthGuard implements CanActivate {
       throw new UnauthorizedException('Unauthorized');
     }
 
-    const user = await this.prisma.user.findUnique({
-      where: { id: userId },
-    });
+    let user: User | null;
+    try {
+      user = await this.prisma.user.findUnique({
+        where: { id: userId },
+      });
+    } catch (error: unknown) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError ||
+        error instanceof Prisma.PrismaClientInitializationError ||
+        error instanceof Prisma.PrismaClientUnknownRequestError ||
+        error instanceof Prisma.PrismaClientValidationError
+      ) {
+        throw new ServiceUnavailableException('Database unavailable');
+      }
+      throw error;
+    }
 
     if (!user) {
       throw new UnauthorizedException('Unauthorized');

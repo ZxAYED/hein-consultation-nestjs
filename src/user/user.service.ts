@@ -5,20 +5,23 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
+import { UserRole } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
+import { getPagination } from 'src/common/utils/pagination';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { generateOtpEmailTemplate } from 'src/utils/generateOtpEmailTemplate';
 import { sendResponse } from 'src/utils/sendResponse';
 import { sendVerificationEmail } from 'src/utils/sendVerificationEmail';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-
 @Injectable()
 export class UserService {
   constructor(
     private readonly prisma: PrismaService,
     private jwtService: JwtService,
+    private configService: ConfigService,
   ) {}
 
   async create(createUserDto: CreateUserDto) {
@@ -59,6 +62,7 @@ export class UserService {
 
     // Send verification email
     await sendVerificationEmail(
+      this.configService,
       createUserDto.email, // user email
       'Verify your account',
       htmlText,
@@ -103,6 +107,7 @@ export class UserService {
 
     // Send verification email
     await sendVerificationEmail(
+      this.configService,
       email, // user email
       'Verify your account',
       htmlText,
@@ -157,7 +162,16 @@ export class UserService {
       throw new NotFoundException('User not found');
     }
     if (!isUserExist.isVerified) {
-      throw new ConflictException('User not verified');
+      throw new ConflictException(
+        'User not verified, Please verify your account first.',
+      );
+    }
+
+    if (isUserExist.isBlocked) {
+      throw new ConflictException('User is blocked');
+    }
+    if (isUserExist.isDeleted) {
+      throw new ConflictException('User is deleted');
     }
     const isPasswordMatch = await bcrypt.compare(
       password,
@@ -192,6 +206,7 @@ export class UserService {
 
     // Send verification email
     await sendVerificationEmail(
+      this.configService,
       email, // user email
       'Verify your login',
       htmlText,
@@ -238,6 +253,7 @@ export class UserService {
 
     // Send verification email
     await sendVerificationEmail(
+      this.configService,
       email, // user email
       'Verify your login',
       htmlText,
@@ -371,6 +387,7 @@ export class UserService {
 
     // Send verification email
     await sendVerificationEmail(
+      this.configService,
       email, // user email
       'Reset your password',
       htmlText,
@@ -420,8 +437,65 @@ export class UserService {
     return sendResponse('Profile Updated Successfully', result);
   }
 
-  findAll() {
-    return `This action returns all user`;
+  async blockUser(id: string) {
+    await this.prisma.user.update({
+      where: { id },
+      data: {
+        isBlocked: true,
+      },
+    });
+    return sendResponse('User Blocked Successfully');
+  }
+  async unblockUser(id: string) {
+    await this.prisma.user.update({
+      where: { id },
+      data: {
+        isBlocked: false,
+      },
+    });
+    return sendResponse('User Unblocked Successfully');
+  }
+
+  async deleteUser(id: string) {
+    await this.prisma.user.update({
+      where: { id },
+      data: {
+        isDeleted: true,
+      },
+    });
+    return sendResponse('User Deleted Successfully');
+  }
+
+  async changeRole(id: string, role: UserRole) {
+    await this.prisma.user.update({
+      where: { id },
+      data: {
+        role,
+      },
+    });
+    return sendResponse('Role Changed Successfully');
+  }
+
+  async findAll(page?: number, limit?: number) {
+    const totalItems = await this.prisma.user.count({
+      where: {
+        isBlocked: false,
+        isDeleted: false,
+      },
+    });
+
+    const { skip, take, meta } = getPagination(page, limit, totalItems);
+
+    const data = await this.prisma.user.findMany({
+      where: {
+        isBlocked: false,
+        isDeleted: false,
+      },
+      skip,
+      take,
+    });
+
+    return sendResponse('All user fetched successfully', { data, meta });
   }
 
   findOne(id: number) {

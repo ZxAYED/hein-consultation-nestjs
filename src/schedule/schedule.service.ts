@@ -4,11 +4,12 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { ServiceName, SlotStatus } from '@prisma/client';
+import { SlotStatus } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { sendResponse } from 'src/utils/sendResponse';
 import { GenerateSlotsDto } from './dto/generate-slots.dto';
 import { GetSlotsQueryDto } from './dto/get-slots-query.dto';
+import { ServiceName } from './entities/service-name.entity';
 
 @Injectable()
 export class ScheduleService {
@@ -93,7 +94,7 @@ export class ScheduleService {
       },
     });
 
-    return slots;
+    return sendResponse('Slots retrieved successfully', slots);
   }
 
   async updateSlotStatus(id: string, status: SlotStatus) {
@@ -107,6 +108,11 @@ export class ScheduleService {
     }
     if (slot.status === status) {
       throw new ConflictException(`Slot is already ${status}`);
+    }
+    if (!Object.values(SlotStatus).includes(status)) {
+      throw new BadRequestException(
+        `Invalid status , must be one of ${Object.values(SlotStatus).join(', ')}`,
+      );
     }
     await this.prisma.scheduleSlot.update({
       where: { id },

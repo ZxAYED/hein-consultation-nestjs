@@ -1,5 +1,13 @@
-import { MeetingType, ServiceName } from '@prisma/client';
-import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { MeetingType } from '@prisma/client';
+import {
+  IsEnum,
+  IsIn,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+} from 'class-validator';
+import type { ServiceName } from 'src/schedule/entities/service-name.entity';
+import { SERVICE_NAME_VALUES } from 'src/schedule/entities/service-name.entity';
 
 export class CreateAppointmentDto {
   @IsString()
@@ -7,7 +15,7 @@ export class CreateAppointmentDto {
   userId: string;
 
   @IsNotEmpty()
-  @IsEnum(ServiceName)
+  @IsIn(SERVICE_NAME_VALUES)
   serviceName: ServiceName;
 
   @IsString()

@@ -8,6 +8,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   Req,
   UploadedFile,
   UseGuards,
@@ -15,6 +16,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { FileInterceptor } from '@nestjs/platform-express';
+import { UserRole } from '@prisma/client';
 import multer from 'multer';
 import { Roles } from 'src/common/decorator/rolesDecorator';
 import { AuthGuard } from 'src/common/guards/auth/auth.guard';
@@ -30,6 +32,14 @@ export class UserController {
     private readonly userService: UserService,
     private configService: ConfigService,
   ) {}
+
+  @UseGuards(AuthGuard)
+  @Roles(ROLE.ADMIN)
+  @Get()
+  findAll(@Query('page') page?: number, @Query('limit') limit?: number) {
+    return this.userService.findAll(page, limit);
+  }
+
   @UseGuards(AuthGuard)
   @Roles(ROLE.CUSTOMER, ROLE.ADMIN)
   @Get('/me')
@@ -119,7 +129,6 @@ export class UserController {
   @UseInterceptors(FileInterceptor('file', { storage: multer.memoryStorage() }))
   async updateProfile(
     @Req() req: Request & { user: any },
-
     @Body() body?: any,
     @UploadedFile() image?: Express.Multer.File,
   ) {
@@ -152,9 +161,33 @@ export class UserController {
 
     return this.userService.updateProfile(req.user.id, userUpdateData);
   }
-  @Get()
-  findAll() {
-    return this.userService.findAll();
+
+  @Patch('block-user/:id')
+  @UseGuards(AuthGuard)
+  @Roles(ROLE.ADMIN)
+  blockUser(@Param('id') id: string) {
+    return this.userService.blockUser(id);
+  }
+
+  @Patch('unblock-user/:id')
+  @UseGuards(AuthGuard)
+  @Roles(ROLE.ADMIN)
+  unblockUser(@Param('id') id: string) {
+    return this.userService.unblockUser(id);
+  }
+
+  @Patch('change-role/:id')
+  @UseGuards(AuthGuard)
+  @Roles(ROLE.ADMIN)
+  changeRole(@Param('id') id: string, @Body('role') role: UserRole) {
+    return this.userService.changeRole(id, role);
+  }
+
+  @Delete('delete-user/:id')
+  @UseGuards(AuthGuard)
+  @Roles(ROLE.ADMIN)
+  deleteUser(@Param('id') id: string) {
+    return this.userService.deleteUser(id);
   }
 
   @Get(':id')
