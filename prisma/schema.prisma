@@ -1,5 +1,6 @@
+
 generator client {
-  provider   = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
@@ -8,11 +9,11 @@ datasource db {
 }
 
 model User {
-  id                        String     @id @default(uuid())
+  id                        String    @id @default(uuid())
   firstName                 String
   lastName                  String
-  email                     String     @unique
-  role                      UserRole   @default(CUSTOMER)
+  email                     String    @unique
+  role                      UserRole  @default(CUSTOMER)
   companyName               String
   image                     String?
   street                    String?
@@ -30,65 +31,154 @@ model User {
   loginOtpExpireIn          DateTime?
   resetPasswordOtp          String?
   resetPasswordOtpExpireIn  DateTime?
-  isVerified                Boolean    @default(false)
-  isBlocked                 Boolean    @default(false)
-  isDeleted                 Boolean    @default(false)
-  createdAt                 DateTime   @default(now())
-  updatedAt                 DateTime   @updatedAt
-  documents                 Document[]
-  invoices                  Invoice[]
-  blogs                     Blog[]
+  isVerified                Boolean   @default(false)
+  isBlocked                 Boolean   @default(false)
+  isDeleted                 Boolean   @default(false)
+  createdAt                 DateTime  @default(now())
+  updatedAt                 DateTime  @updatedAt
+
+  documents    Document[]
+  invoices     Invoice[]
+  appointments Appointment[]
+  blogs        Blog[]
+}
+
+model ScheduleSlot {
+  id String @id @default(uuid())
+
+  serviceName ServiceName
+
+  date      DateTime // normalized day (e.g. 2025-12-19T00:00:00)
+  startTime DateTime
+  endTime   DateTime
+
+  durationMin Int
+
+  status SlotStatus // Available | Booked | Disabled
+
+  appointmentId String?      @unique
+  appointment   Appointment?
+
+  createdById String? // admin id or null (system)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([serviceName, date])
+  @@index([date, startTime])
+}
+
+model Appointment {
+  id            String      @id @default(uuid())
+  appointmentNo String      @unique
+  userId        String
+  serviceName   ServiceName
+
+  slotId      String            @unique
+  scheduledAt DateTime
+  meetingType MeetingType
+  status      AppointmentStatus
+  note        String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user      User         @relation(fields: [userId], references: [id])
+  slot      ScheduleSlot @relation(fields: [slotId], references: [id])
+  documents Document[]
+  invoice   Invoice?
 }
 
 model Document {
-  id           String         @id @default(uuid())
-  customerId   String
-  name         String
-  status       DocumentStatus
-  type         DocumentType
-  documentLink String
-  tags         String[]
-  description  String
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
-  customer     User           @relation(fields: [customerId], references: [id])
+  id            String  @id @default(uuid())
+  userId        String
+  appointmentId String?
+  invoiceId     String?
+
+  name        String
+  type        DocumentType
+  status      DocumentStatus
+  fileUrl     String
+  tags        String[]
+  description String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user        User            @relation(fields: [userId], references: [id])
+  appointment Appointment?    @relation(fields: [appointmentId], references: [id])
+  invoice     Invoice?        @relation(fields: [invoiceId], references: [id])
+  audits      DocumentAudit[]
+}
+
+model DocumentAudit {
+  id            String              @id @default(uuid())
+  documentId    String
+  action        DocumentAuditAction
+  performedById String
+  metadata      Json?
+  createdAt     DateTime            @default(now())
+
+  document Document @relation(fields: [documentId], references: [id])
 }
 
 model Invoice {
-  id          String             @id @default(uuid())
-  invoiceId   String?            @unique
-  clientName  String
-  email       String
-  companyName String
+  id            String  @id @default(uuid())
+  invoiceNo     String  @unique
+  userId        String
+  appointmentId String?
+
   amount      Float
-  issuedBy    String
   status      InvoiceStatus
   paymentType InvoicePaymentType
-  createdDate DateTime
+  issuedAt    DateTime
   dueDate     DateTime
-  customer    User               @relation(fields: [email], references: [email])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user        User         @relation(fields: [userId], references: [id])
+  appointment Appointment? @relation(fields: [appointmentId], references: [id])
+  documents   Document[]
+
+  @@unique([appointmentId])
+  @@index([appointmentId])
 }
 
 model Blog {
-  id          String     @id @default(uuid())
+  id          String         @id @default(uuid())
   title       String
   adminId     String
-  slug        String     @unique
+  slug        String         @unique
   excerpt     String
   image       String
   content     String
   status      BlogStatus
   publishDate DateTime
-  categories  String[]
-  tags        String[]
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
-  admin       User       @relation(fields: [adminId], references: [id])
+  categories  BlogCategory[]
+  tags        BlogTags[]
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  admin User @relation(fields: [adminId], references: [id])
 }
 
-enum BlogStatus {
-  Schedule
-  Publish
+enum BlogCategory {
+  Web_Development
+  Tutorial
+  Design
+  Programming
+  News
+}
+
+enum BlogTags {
+  REACT
+  JAVASCRIPT
+  TYPESCRIPT
+  CSS
+  HTML
+  NODE_JS
+  DESIGN
+  UI_UX
 }
 
 enum UserRole {
@@ -96,11 +186,24 @@ enum UserRole {
   ADMIN
 }
 
+enum AppointmentStatus {
+  Upcoming
+  Completed
+  Cancelled
+}
+
+enum MeetingType {
+  Virtual
+  InPerson
+  Phone
+}
+
 enum DocumentType {
   Invoice
   Appointment
   Profile
   Security
+  Compliance
 }
 
 enum DocumentStatus {
@@ -109,13 +212,39 @@ enum DocumentStatus {
   Approved
 }
 
+enum DocumentAuditAction {
+  CREATED
+  UPDATED
+  STATUS_CHANGED
+  DOWNLOADED
+  DELETED
+}
+
 enum InvoiceStatus {
   Paid
-  Panding
+  Pending
   Overdue
+}
+
+enum SlotStatus {
+  Available
+  Booked
+  Disabled
 }
 
 enum InvoicePaymentType {
   Cash
   BankTransfer
+}
+
+enum BlogStatus {
+  Schedule
+  Publish
+}
+
+enum ServiceName {
+  SAP_CONSULTING_SESSION
+  FINANCIAL_AUDIT
+  SAP_SYSTEM_OPTIMIZATION
+  PROCESS_AUTOMATION
 }
