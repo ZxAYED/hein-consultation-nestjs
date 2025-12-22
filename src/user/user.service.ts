@@ -1,3 +1,4 @@
+import { ConfigService } from '@nestjs/config';
 import {
   Injectable,
   NotFoundException,
@@ -14,11 +15,13 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { getPagination } from 'src/common/utils/pagination';
+import { UserRole } from '@prisma/client';
 @Injectable()
 export class UserService {
   constructor(
     private readonly prisma: PrismaService,
     private jwtService: JwtService,
+    private configService: ConfigService,
   ) {}
 
   async create(createUserDto: CreateUserDto) {
@@ -60,6 +63,7 @@ export class UserService {
 
     // Send verification email
     await sendVerificationEmail(
+      this.configService,
       createUserDto.email, // user email
       'Verify your account',
       htmlText,
@@ -104,6 +108,7 @@ export class UserService {
 
     // Send verification email
     await sendVerificationEmail(
+      this.configService,
       email, // user email
       'Verify your account',
       htmlText,
@@ -158,7 +163,16 @@ export class UserService {
       throw new NotFoundException('User not found');
     }
     if (!isUserExist.isVerified) {
-      throw new ConflictException('User not verified');
+      throw new ConflictException(
+        'User not verified, Please verify your account first.',
+      );
+    }
+
+    if (isUserExist.isBlocked) {
+      throw new ConflictException('User is blocked');
+    }
+    if (isUserExist.isDeleted) {
+      throw new ConflictException('User is deleted');
     }
     const isPasswordMatch = await bcrypt.compare(
       password,
@@ -193,6 +207,7 @@ export class UserService {
 
     // Send verification email
     await sendVerificationEmail(
+      this.configService,
       email, // user email
       'Verify your login',
       htmlText,
@@ -239,6 +254,7 @@ export class UserService {
 
     // Send verification email
     await sendVerificationEmail(
+      this.configService,
       email, // user email
       'Verify your login',
       htmlText,
@@ -372,6 +388,7 @@ export class UserService {
 
     // Send verification email
     await sendVerificationEmail(
+      this.configService,
       email, // user email
       'Reset your password',
       htmlText,
@@ -441,10 +458,23 @@ export class UserService {
   }
 
   async deleteUser(id: string) {
-    await this.prisma.user.delete({
+    await this.prisma.user.update({
       where: { id },
+      data: {
+        isDeleted: true,
+      }
     });
     return sendResponse('User Deleted Successfully');
+  }
+
+  async changeRole(id: string, role: UserRole) {
+    await this.prisma.user.update({
+      where: { id },
+      data: {
+        role,
+      },
+    });
+    return sendResponse('Role Changed Successfully');
   }
 
   async findAll(page?: number, limit?: number) {
@@ -466,9 +496,7 @@ export class UserService {
       take,
     });
 
-   
-
-   return sendResponse('All user fetched successfully', { data, meta });
+    return sendResponse('All user fetched successfully', { data, meta });
   }
 
   findOne(id: number) {

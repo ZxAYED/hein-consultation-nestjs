@@ -23,6 +23,7 @@ import { Request } from 'express';
 import { uploadFileToSupabase } from 'src/utils/common/uploadFileToSupabase';
 import multer from 'multer';
 import { ConfigService } from '@nestjs/config';
+import { UserRole } from '@prisma/client';
 
 @Controller('user')
 export class UserController {
@@ -30,6 +31,14 @@ export class UserController {
     private readonly userService: UserService,
     private configService: ConfigService,
   ) {}
+
+  @UseGuards(AuthGuard)
+  @Roles(ROLE.ADMIN)
+  @Get()
+  findAll(@Query('page') page?: number, @Query('limit') limit?: number) {
+    return this.userService.findAll(page, limit);
+  }
+
   @UseGuards(AuthGuard)
   @Roles(ROLE.CUSTOMER, ROLE.ADMIN)
   @Get('/me')
@@ -167,16 +176,18 @@ export class UserController {
     return this.userService.unblockUser(id);
   }
 
-  @Patch('delete-user/:id')
+  @Patch('change-role/:id')
+  @UseGuards(AuthGuard)
+  @Roles(ROLE.ADMIN)
+  changeRole(@Param('id') id: string, @Body('role') role: UserRole) {
+    return this.userService.changeRole(id, role);
+  }
+
+  @Delete('delete-user/:id')
   @UseGuards(AuthGuard)
   @Roles(ROLE.ADMIN)
   deleteUser(@Param('id') id: string) {
     return this.userService.deleteUser(id);
-  }
-
-  @Get()
-  findAll(@Query('page') page?: number, @Query('limit') limit?: number) {
-    return this.userService.findAll(page, limit);
   }
 
   @Get(':id')
