@@ -1,9 +1,10 @@
-import { IsNotEmpty, IsString, Matches } from 'class-validator';
+import { ServiceName } from '@prisma/client';
+import { IsEnum, IsNotEmpty, IsString, Matches } from 'class-validator';
 
 export class GetSlotsQueryDto {
-  @IsString()
   @IsNotEmpty()
-  serviceName: string;
+  @IsEnum(ServiceName)
+  serviceName: ServiceName;
 
   @IsString()
   @Matches(/^\d{4}-\d{2}-\d{2}$/)

@@ -4,7 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { SlotStatus } from '@prisma/client';
+import { ServiceName, SlotStatus } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { sendResponse } from 'src/utils/sendResponse';
 import { GenerateSlotsDto } from './dto/generate-slots.dto';
@@ -37,7 +37,7 @@ export class ScheduleService {
     }
 
     const slots: Array<{
-      serviceName: string;
+      serviceName: ServiceName;
       date: Date;
       startTime: Date;
       endTime: Date;
@@ -72,7 +72,8 @@ export class ScheduleService {
     });
 
     return sendResponse('Slots generated successfully', {
-      createdCount: result.count,
+      // createdCount: result.count,
+      result,
     });
   }
 
@@ -95,7 +96,7 @@ export class ScheduleService {
     return slots;
   }
 
-  async disableSlot(id: string) {
+  async updateSlotStatus(id: string, status: SlotStatus) {
     const slot = await this.prisma.scheduleSlot.findUnique({
       where: { id },
       select: { id: true, status: true },
@@ -104,17 +105,15 @@ export class ScheduleService {
     if (!slot) {
       throw new NotFoundException('Slot not found');
     }
-
-    if (slot.status === SlotStatus.Booked) {
-      throw new ConflictException('Slot already booked');
+    if (slot.status === status) {
+      throw new ConflictException(`Slot is already ${status}`);
     }
-
     await this.prisma.scheduleSlot.update({
       where: { id },
-      data: { status: SlotStatus.Disabled },
+      data: { status: status },
     });
 
-    return sendResponse('Slot disabled successfully');
+    return sendResponse(`Slot ${status} updated successfully`);
   }
 
   private parseDay(dateStr: string) {

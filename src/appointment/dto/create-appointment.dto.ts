@@ -1,4 +1,4 @@
-import { MeetingType } from '@prisma/client';
+import { MeetingType, ServiceName } from '@prisma/client';
 import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreateAppointmentDto {
@@ -6,9 +6,9 @@ export class CreateAppointmentDto {
   @IsNotEmpty()
   userId: string;
 
-  @IsString()
   @IsNotEmpty()
-  serviceName: string;
+  @IsEnum(ServiceName)
+  serviceName: ServiceName;
 
   @IsString()
   @IsNotEmpty()

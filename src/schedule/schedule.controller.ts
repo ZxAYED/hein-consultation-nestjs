@@ -1,14 +1,15 @@
 import {
   Body,
   Controller,
-  Delete,
   Get,
   Param,
+  Patch,
   Post,
   Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
+import { SlotStatus } from '@prisma/client';
 import { Request } from 'express';
 import { Roles } from 'src/common/decorator/rolesDecorator';
 import { AuthGuard } from 'src/common/guards/auth/auth.guard';
@@ -32,14 +33,15 @@ export class ScheduleController {
   }
 
   @Get('slots')
+  @UseGuards(AuthGuard)
   getSlots(@Query() query: GetSlotsQueryDto) {
     return this.scheduleService.getSlotsByDay(query);
   }
 
   @UseGuards(AuthGuard)
   @Roles(ROLE.ADMIN)
-  @Delete('slots/:id')
-  disableSlot(@Param('id') id: string) {
-    return this.scheduleService.disableSlot(id);
+  @Patch('slots/:id')
+  disableSlot(@Param('id') id: string, @Body() body: { status: SlotStatus }) {
+    return this.scheduleService.updateSlotStatus(id, body.status);
   }
 }

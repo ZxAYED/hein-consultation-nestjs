@@ -8,7 +8,7 @@ export const uploadFileToSupabase = async (
 ) => {
   if (!file?.buffer) throw new Error('File not provided');
 
-  const supabase = getSupabaseClient(configService); // ✅ must call
+  const supabase = getSupabaseClient(configService);
 
   const safeFileName = file.originalname.replace(/[^a-zA-Z0-9._-]/g, '');
   const filePath = `${folder}/${Date.now()}-${safeFileName}`;

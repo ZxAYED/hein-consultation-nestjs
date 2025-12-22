@@ -1,14 +1,14 @@
-export function sendResponse(message: string, data?: unknown) {
-  if (data) {
+export function sendResponse<T>(message: string, data?: T) {
+  if (data !== undefined) {
     return {
       success: true,
       message,
-      data: data || null,
-    };
-  } else {
-    return {
-      success: true,
-      message,
+      data,
     };
   }
+
+  return {
+    success: true,
+    message,
+  };
 }

@@ -28,6 +28,8 @@ model User {
   registrationOtpExpireIn   DateTime?
   loginOtp                  String?
   loginOtpExpireIn          DateTime?
+  resetPasswordOtp          String?
+  resetPasswordOtpExpireIn  DateTime?
   isVerified                Boolean   @default(false)
   isBlocked                 Boolean   @default(false)
   isDeleted                 Boolean   @default(false)
@@ -43,13 +45,13 @@ model User {
 model ScheduleSlot {
   id String @id @default(uuid())
 
-  serviceName String
+  serviceName ServiceName
 
   date      DateTime // normalized day (e.g. 2025-12-19T00:00:00)
-  startTime DateTime // exact slot start
-  endTime   DateTime // exact slot end
+  startTime DateTime 
+  endTime   DateTime
 
-  durationMin Int // duration used to create this slot
+  durationMin Int
 
   status SlotStatus // Available | Booked | Disabled
 
@@ -68,7 +70,7 @@ model Appointment {
   id            String @id @default(uuid())
   appointmentNo String @unique
   userId        String
-  serviceName   String
+  serviceName   ServiceName
 
   slotId      String            @unique
   scheduledAt DateTime
@@ -81,8 +83,8 @@ model Appointment {
 
   user     User         @relation(fields: [userId], references: [id])
   slot     ScheduleSlot @relation(fields: [slotId], references: [id])
-  Document Document[]
-  Invoice  Invoice?
+  documents Document[]
+  invoice   Invoice?
 }
 
 model Document {
@@ -218,4 +220,11 @@ enum InvoicePaymentType {
 enum BlogStatus {
   Schedule
   Publish
+}
+
+enum ServiceName {
+  SAP_CONSULTING_SESSION
+  FINANCIAL_AUDIT
+  SAP_SYSTEM_OPTIMIZATION
+  PROCESS_AUTOMATION
 }

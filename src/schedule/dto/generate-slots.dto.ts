@@ -1,9 +1,17 @@
-import { IsInt, IsNotEmpty, IsString, Matches, Min } from 'class-validator';
+import { ServiceName } from '@prisma/client';
+import {
+  IsEnum,
+  IsInt,
+  IsNotEmpty,
+  IsString,
+  Matches,
+  Min,
+} from 'class-validator';
 
 export class GenerateSlotsDto {
-  @IsString()
   @IsNotEmpty()
-  serviceName: string;
+  @IsEnum(ServiceName)
+  serviceName: ServiceName;
 
   @IsString()
   @Matches(/^\d{4}-\d{2}-\d{2}$/)

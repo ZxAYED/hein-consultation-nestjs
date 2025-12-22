@@ -1,4 +1,4 @@
-import { AppointmentStatus } from '@prisma/client';
+import { AppointmentStatus, ServiceName } from '@prisma/client';
 import {
   IsEnum,
   IsInt,
@@ -26,8 +26,8 @@ export class GetAppointmentsQueryDto {
   status?: AppointmentStatus;
 
   @IsOptional()
-  @IsString()
-  serviceName?: string;
+  @IsEnum(ServiceName)
+  serviceName?: ServiceName;
 
   @IsOptional()
   @IsString()
