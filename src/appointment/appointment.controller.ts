@@ -25,7 +25,6 @@ import { AuthGuard } from 'src/common/guards/auth/auth.guard';
 import { ROLE } from 'src/user/entities/role.entity';
 import { AppointmentService } from './appointment.service';
 import { CreateAppointmentDto } from './dto/create-appointment.dto';
-import { GetAppointmentsQueryDto } from './dto/get-appointments-query.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
 
 @Controller('appointments')
@@ -74,10 +73,21 @@ export class AppointmentController {
   @Roles(ROLE.CUSTOMER, ROLE.ADMIN)
   @Get()
   list(
-    @Query() query: GetAppointmentsQueryDto,
+    @Query() query: { page?: string | number; limit?: string | number },
     @Req() req: Request & { user: { id: string; role: UserRole } },
   ) {
-    return this.appointmentService.list(query, req.user);
+    const page =
+      query.page !== undefined ? Math.max(1, Number(query.page)) : undefined;
+    const limit =
+      query.limit !== undefined ? Math.max(1, Number(query.limit)) : undefined;
+    return this.appointmentService.list({ page, limit }, req.user);
+  }
+
+  @UseGuards(AuthGuard)
+  @Roles(ROLE.CUSTOMER, ROLE.ADMIN)
+  @Get('all')
+  listAll(@Req() req: Request & { user: { id: string; role: UserRole } }) {
+    return this.appointmentService.listAll(req.user);
   }
 
   @UseGuards(AuthGuard)

@@ -24,16 +24,12 @@ import { generateUniqueSlug } from 'src/common/utils/generateUniqueSlug';
 import { uploadFileToSupabase } from 'src/utils/common/uploadFileToSupabase';
 import { BlogStatus } from '@prisma/client';
 
-
-
-
-
 @Controller('blog')
 export class BlogController {
- constructor(
-  private readonly blogService: BlogService,
-  private configService: ConfigService,
-) {}
+  constructor(
+    private readonly blogService: BlogService,
+    private configService: ConfigService,
+  ) {}
 
   @UseGuards(AuthGuard)
   @Roles(ROLE.ADMIN)
@@ -58,14 +54,18 @@ export class BlogController {
     const slug = await generateUniqueSlug(parsed.title, this.blogService);
 
     // Upload image
-    const imageLink = await uploadFileToSupabase(file, this.configService, 'blog');
+    const imageLink = await uploadFileToSupabase(
+      file,
+      this.configService,
+      'blog',
+    );
 
     // Add adminId from request user
     const adminId = req?.user?.id;
 
-    const status=BlogStatus.Publish
+    const status = BlogStatus.Publish;
 
-    const blogData = { ...parsed, slug, image: imageLink, adminId,status };
+    const blogData = { ...parsed, slug, image: imageLink, adminId, status };
     return await this.blogService.create(blogData);
   }
 

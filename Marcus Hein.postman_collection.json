@@ -1,0 +1,842 @@
+{
+	"info": {
+		"_postman_id": "0581e61f-9ec6-49ca-9f9e-5a3e0fbab055",
+		"name": "Marcus Hein",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "39781146",
+		"_collection_link": "https://next-level-4-arms-team.postman.co/workspace/Team-Workspace~8e12135a-9505-41ce-8b0f-eb129435841e/collection/39781146-0581e61f-9ec6-49ca-9f9e-5a3e0fbab055?action=share&source=collection_link&creator=39781146"
+	},
+	"item": [
+		{
+			"name": "User",
+			"item": [
+				{
+					"name": "Auth",
+					"item": [
+						{
+							"name": "Registration",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "data",
+											"value": "{\n  \"firstName\": \"Humayun\",\n  \"lastName\": \"Kabir\",\n\"email\":\"mdhumayunkabirbd586@gmail.com\",\n  \"companyName\": \"Tech Solutions Ltd\",\n  \"street\": \"123 Main Street\",\n  \"city\": \"New York\",\n  \"zip\": \"10001\",\n  \"country\": \"USA\",\n  \"phoneNumber\": \"+1-555-123-4567\",\n  \"vatUid\": \"US123456789\",\n  \"companyRegistrationNumber\": \"REG-987654\",\n  \"password\": \"123456\",\n  \"subject\": \"Account Registration\"\n}\n",
+											"type": "text"
+										},
+										{
+											"key": "file",
+											"type": "file",
+											"src": "postman-cloud:///1f0dbc80-d4da-45a0-8769-77be3736a00c"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base-api}}/user",
+									"host": [
+										"{{base-api}}"
+									],
+									"path": [
+										"user"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Profile",
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "{{customer-access-token}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "data",
+											"value": "{\n  \"firstName\": \"Humayun\",\n  \"lastName\": \"Kabir  22222\"\n}\n",
+											"type": "text"
+										},
+										{
+											"key": "file",
+											"type": "file",
+											"src": "postman-cloud:///1f0de4a0-c47b-4ea0-b334-db00c0a565fe"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base-api}}/user/update-profile",
+									"host": [
+										"{{base-api}}"
+									],
+									"path": [
+										"user",
+										"update-profile"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Resend Register Otp",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"email\":\"mdhumayunkabirbd586@gmail.com\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base-api}}/user/resend-register-otp",
+									"host": [
+										"{{base-api}}"
+									],
+									"path": [
+										"user",
+										"resend-register-otp"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Verify Register OTP",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"email\":\"ot00xe7mmw@bwmyga.com\",\r\n    \"otp\":\"267487\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{live-api}}/user/verify-register-otp",
+									"host": [
+										"{{live-api}}"
+									],
+									"path": [
+										"user",
+										"verify-register-otp"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Login",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"email\":\"mdhumayunkabirbd586@gmail.com\",\r\n    \"password\":\"25802580\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base-api}}/user/login",
+									"host": [
+										"{{base-api}}"
+									],
+									"path": [
+										"user",
+										"login"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Change Password",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"email\":\"mdhumayunkabirbd586@gmail.com\",\r\n    \"oldPassword\":\"12345678\",\r\n    \"newPassword\":\"123456\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base-api}}/user/change-password",
+									"host": [
+										"{{base-api}}"
+									],
+									"path": [
+										"user",
+										"change-password"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Forgotten Password",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"email\":\"mdhumayunkabirbd586@gmail.com\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base-api}}/user/forgotten-password",
+									"host": [
+										"{{base-api}}"
+									],
+									"path": [
+										"user",
+										"forgotten-password"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Verify Forgotten Password",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"email\":\"mdhumayunkabirbd586@gmail.com\",\r\n    \"otp\":\"376277\",\r\n    \"newPassword\":\"25802580\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base-api}}/user/verify-forgotten-password-otp",
+									"host": [
+										"{{base-api}}"
+									],
+									"path": [
+										"user",
+										"verify-forgotten-password-otp"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Resend Login OTP",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"email\":\"mdhumayunkabirbd586@gmail.com\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base-api}}/user/resend-login-otp",
+									"host": [
+										"{{base-api}}"
+									],
+									"path": [
+										"user",
+										"resend-login-otp"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Verify Login OTP",
+							"request": {
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"email\":\"mdhumayunkabirbd586@gmail.com\",\r\n    \"otp\":\"192335\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base-api}}/user/verify-login-otp",
+									"host": [
+										"{{base-api}}"
+									],
+									"path": [
+										"user",
+										"verify-login-otp"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Admin",
+					"item": [
+						{
+							"name": "Get All User",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "{{customer-access-token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{base-api}}/user",
+									"host": [
+										"{{base-api}}"
+									],
+									"path": [
+										"user"
+									],
+									"query": [
+										{
+											"key": "limit",
+											"value": "1",
+											"disabled": true
+										},
+										{
+											"key": "page",
+											"value": "2",
+											"disabled": true
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Block User",
+							"request": {
+								"method": "PATCH",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "data",
+											"value": "{\n  \"firstName\": \"Humayun\",\n  \"lastName\": \"Kabir\",\n\"email\":\"mdhumayunkabirbd586@gmail.com\",\n  \"companyName\": \"Tech Solutions Ltd\",\n  \"street\": \"123 Main Street\",\n  \"city\": \"New York\",\n  \"zip\": \"10001\",\n  \"country\": \"USA\",\n  \"phoneNumber\": \"+1-555-123-4567\",\n  \"vatUid\": \"US123456789\",\n  \"companyRegistrationNumber\": \"REG-987654\",\n  \"password\": \"123456\",\n  \"subject\": \"Account Registration\"\n}\n",
+											"type": "text"
+										},
+										{
+											"key": "file",
+											"type": "file",
+											"src": "postman-cloud:///1f0dbc80-d4da-45a0-8769-77be3736a00c"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base-api}}/user/block-user/:id",
+									"host": [
+										"{{base-api}}"
+									],
+									"path": [
+										"user",
+										"block-user",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": ""
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Unblock User",
+							"request": {
+								"method": "PATCH",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "data",
+											"value": "{\n  \"firstName\": \"Humayun\",\n  \"lastName\": \"Kabir\",\n\"email\":\"mdhumayunkabirbd586@gmail.com\",\n  \"companyName\": \"Tech Solutions Ltd\",\n  \"street\": \"123 Main Street\",\n  \"city\": \"New York\",\n  \"zip\": \"10001\",\n  \"country\": \"USA\",\n  \"phoneNumber\": \"+1-555-123-4567\",\n  \"vatUid\": \"US123456789\",\n  \"companyRegistrationNumber\": \"REG-987654\",\n  \"password\": \"123456\",\n  \"subject\": \"Account Registration\"\n}\n",
+											"type": "text"
+										},
+										{
+											"key": "file",
+											"type": "file",
+											"src": "postman-cloud:///1f0dbc80-d4da-45a0-8769-77be3736a00c"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base-api}}/user/unblock-user/:id",
+									"host": [
+										"{{base-api}}"
+									],
+									"path": [
+										"user",
+										"unblock-user",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": ""
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete User",
+							"request": {
+								"method": "DELETE",
+								"header": [],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "data",
+											"value": "{\n  \"firstName\": \"Humayun\",\n  \"lastName\": \"Kabir\",\n\"email\":\"mdhumayunkabirbd586@gmail.com\",\n  \"companyName\": \"Tech Solutions Ltd\",\n  \"street\": \"123 Main Street\",\n  \"city\": \"New York\",\n  \"zip\": \"10001\",\n  \"country\": \"USA\",\n  \"phoneNumber\": \"+1-555-123-4567\",\n  \"vatUid\": \"US123456789\",\n  \"companyRegistrationNumber\": \"REG-987654\",\n  \"password\": \"123456\",\n  \"subject\": \"Account Registration\"\n}\n",
+											"type": "text"
+										},
+										{
+											"key": "file",
+											"type": "file",
+											"src": "postman-cloud:///1f0dbc80-d4da-45a0-8769-77be3736a00c"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base-api}}/user/delete-user/:id",
+									"host": [
+										"{{base-api}}"
+									],
+									"path": [
+										"user",
+										"delete-user",
+										":id"
+									],
+									"variable": [
+										{
+											"key": "id",
+											"value": ""
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Get My Profile Info",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{customer-access-token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{live-api}}/user/me",
+							"host": [
+								"{{live-api}}"
+							],
+							"path": [
+								"user",
+								"me"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "schedule",
+			"item": [
+				{
+					"name": "create schedule",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{admin-access-token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"serviceName\": \"SAP System Optimization\",\r\n  \"date\": \"2025-12-22\",\r\n  \"startTime\": \"09:00\",\r\n  \"endTime\": \"7:00\",\r\n  \"durationMin\": 30\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{live-api}}/schedule/generate",
+							"host": [
+								"{{live-api}}"
+							],
+							"path": [
+								"schedule",
+								"generate"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get slots",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base-url}}/schedule/slots",
+							"host": [
+								"{{base-url}}"
+							],
+							"path": [
+								"schedule",
+								"slots"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update status",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{admin-access-token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{ \"status\": \"Booked\" }",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{live-api}}/schedule/slots/2c3057be-7b0a-4a7e-b763-f0802516721b",
+							"host": [
+								"{{live-api}}"
+							],
+							"path": [
+								"schedule",
+								"slots",
+								"2c3057be-7b0a-4a7e-b763-f0802516721b"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "appointment",
+			"item": [
+				{
+					"name": "get attacthments",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{customer-access-token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{live-api}}/appointments?page=1&limit=20",
+							"host": [
+								"{{live-api}}"
+							],
+							"path": [
+								"appointments"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "20"
+								},
+								{
+									"key": "status ",
+									"value": null,
+									"disabled": true
+								},
+								{
+									"key": "serviceName",
+									"value": null,
+									"disabled": true
+								},
+								{
+									"key": "fromDate",
+									"value": null,
+									"disabled": true
+								},
+								{
+									"key": "toDate",
+									"value": null,
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "single",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{customer-access-token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{live-api}}/appointments/:id",
+							"host": [
+								"{{live-api}}"
+							],
+							"path": [
+								"appointments",
+								":id"
+							],
+							"query": [
+								{
+									"key": "status ",
+									"value": null,
+									"disabled": true
+								},
+								{
+									"key": "serviceName",
+									"value": null,
+									"disabled": true
+								},
+								{
+									"key": "fromDate",
+									"value": null,
+									"disabled": true
+								},
+								{
+									"key": "toDate",
+									"value": null,
+									"disabled": true
+								}
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "create",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{customer-access-token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "data",
+									"value": "{\n  \"userId\": \"27084baf-11a7-4630-b7a1-27594c2ec39e\",\n \"serviceName\": \"SAP_CONSULTING_SESSION\",\n  \"slotId\": \"99f27f8f-832a-4312-a8be-b1003f3c258f\",\n  \"meetingType\": \"Virtual\",\n  \"note\": \"optional\"\n}",
+									"type": "text"
+								},
+								{
+									"key": "files",
+									"type": "file",
+									"src": [
+										"/D:/Projects/courier-frontend/parcel-parse-backend/.DS_Store",
+										"/D:/Projects/courier-frontend/parcel-parse-backend/.gitignore"
+									]
+								}
+							]
+						},
+						"url": {
+							"raw": "{{live-api}}/appointments",
+							"host": [
+								"{{live-api}}"
+							],
+							"path": [
+								"appointments"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "patch by customer",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{customer-access-token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"action\": \"cancel | update\",\r\n    \"meetingType\": \"Virtual\",\r\n    \"note\": \"Please call me on WhatsApp first\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{live-api}}/appointments/b9651dbc-6947-49c3-83a4-3c3335b7df10",
+							"host": [
+								"{{live-api}}"
+							],
+							"path": [
+								"appointments",
+								"b9651dbc-6947-49c3-83a4-3c3335b7df10"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "patch by admin",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{admin-access-token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"action\": \"complete\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{live-api}}/appointments/b9651dbc-6947-49c3-83a4-3c3335b7df10",
+							"host": [
+								"{{live-api}}"
+							],
+							"path": [
+								"appointments",
+								"b9651dbc-6947-49c3-83a4-3c3335b7df10"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base-api",
+			"value": ""
+		},
+		{
+			"key": "customer-access-token",
+			"value": ""
+		},
+		{
+			"key": "live-api",
+			"value": ""
+		},
+		{
+			"key": "admin-access-token",
+			"value": "",
+			"type": "default"
+		}
+	]
+}
