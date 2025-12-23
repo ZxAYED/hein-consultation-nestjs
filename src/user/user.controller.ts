@@ -36,12 +36,15 @@ export class UserController {
   @UseGuards(AuthGuard)
   @Roles(ROLE.ADMIN)
   @Get()
-  findAll(@Query('page') page?: number, @Query('limit') limit?: number) {
-    return this.userService.findAll(page, limit);
+  findAll(
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+    @Query('isBlocked') isBlocked?: boolean,
+  ) {
+    return this.userService.findAll(page, limit, isBlocked);
   }
-
   @UseGuards(AuthGuard)
-  @Roles(ROLE.CUSTOMER, ROLE.ADMIN)
+  @Roles()
   @Get('/me')
   me(@Req() req: Request & { user: { id: string } }) {
     return this.userService.getMyProfileInfo(req.user.id);
