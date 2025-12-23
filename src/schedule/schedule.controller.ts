@@ -22,6 +22,14 @@ import { ScheduleService } from './schedule.service';
 export class ScheduleController {
   constructor(private readonly scheduleService: ScheduleService) {}
 
+
+
+  @Get('slots')
+  @UseGuards(AuthGuard)
+  getSlots(@Query() query: GetSlotsQueryDto) {
+    return this.scheduleService.getSlotsByDay(query);
+  }
+
   @UseGuards(AuthGuard)
   @Roles(ROLE.ADMIN)
   @Post('generate')
@@ -32,13 +40,7 @@ export class ScheduleController {
     return this.scheduleService.generateSlots(generateSlotsDto, req.user.id);
   }
 
-  @Get('slots')
-  @UseGuards(AuthGuard)
-  getSlots(@Query() query: GetSlotsQueryDto) {
-    return this.scheduleService.getSlotsByDay(query);
-  }
-
-  @UseGuards(AuthGuard)
+    @UseGuards(AuthGuard)
   @Roles(ROLE.ADMIN)
   @Patch('slots/:id')
   disableSlot(@Param('id') id: string, @Body() body: { status: SlotStatus }) {

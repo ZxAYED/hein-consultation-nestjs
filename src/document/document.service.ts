@@ -22,231 +22,167 @@ export class DocumentService {
     private readonly configService: ConfigService,
   ) {}
 
-  async create(
-    dto: CreateDocumentDto,
-    file: Express.Multer.File | undefined,
-    actor: Pick<User, 'id' | 'role'>,
-  ) {
-    if (!file) {
-      throw new BadRequestException('File is required');
-    }
+async create(data: any) {
+  return this.prisma.document.create({ data });
+}
 
-    if (dto.appointmentId) {
-      const appointment = await this.prisma.appointment.findUnique({
-        where: { id: dto.appointmentId },
-        select: { id: true },
-      });
-      if (!appointment) {
-        throw new NotFoundException('Appointment not found');
-      }
-    }
+  // async list(query: GetDocumentsQueryDto, actor: Pick<User, 'id' | 'role'>) {
+  //   const page = Number(query.page) || 1;
+  //   const limit = Number(query.limit) || 10;
+  //   const skip = (page - 1) * limit;
+  //   const isAdmin = actor.role === UserRole.ADMIN;
 
-    if (dto.invoiceId) {
-      const invoice = await this.prisma.invoice.findUnique({
-        where: { id: dto.invoiceId },
-        select: { id: true },
-      });
-      if (!invoice) {
-        throw new NotFoundException('Invoice not found');
-      }
-    }
+  //   const where: Prisma.DocumentWhereInput = {};
+  //   if (!isAdmin) {
+  //     where.userId = actor.id;
+  //   } else if (query.userId) {
+  //     where.userId = query.userId;
+  //   }
 
-    const { fileUrl, filePath, fileName, originalName } =
-      await uploadFileToSupabaseWithMeta(
-        file,
-        this.configService,
-        'document-uploads',
-      );
-    const name = dto.name ?? originalName ?? fileName;
-    const extension = path.extname(originalName ?? fileName ?? '');
-    const fileFormat = extension ? extension.slice(1).toLowerCase() : 'unknown';
-    const fileMimeType = file.mimetype || 'application/octet-stream';
-    const fileSizeBytes = file.size ?? 0;
-    const isAdmin = actor.role === UserRole.ADMIN;
-    const userId = isAdmin && dto.userId ? dto.userId : actor.id;
+  //   if (query.type) {
+  //     where.type = query.type;
+  //   }
 
-    try {
-      const document = await this.prisma.document.create({
-        data: {
-          userId,
-          appointmentId: dto.appointmentId ?? null,
-          invoiceId: dto.invoiceId ?? null,
-          name,
-          type: dto.type,
-          status: dto.status,
-          fileUrl,
-          fileSizeBytes,
-          fileFormat,
-          fileMimeType,
-          tags: dto.tags ?? [],
-          description: dto.description ?? null,
-        },
-      });
+  //   if (query.status) {
+  //     where.status = query.status;
+  //   }
 
-      return sendResponse('Document created successfully', document);
-    } catch (error) {
-      await deleteFilesFromSupabase([filePath], this.configService);
-      throw error;
-    }
-  }
+  //   if (query.appointmentId) {
+  //     where.appointmentId = query.appointmentId;
+  //   }
 
-  async list(query: GetDocumentsQueryDto, actor: Pick<User, 'id' | 'role'>) {
-    const page = Number(query.page) || 1;
-    const limit = Number(query.limit) || 10;
-    const skip = (page - 1) * limit;
-    const isAdmin = actor.role === UserRole.ADMIN;
+  //   if (query.invoiceId) {
+  //     where.invoiceId = query.invoiceId;
+  //   }
 
-    const where: Prisma.DocumentWhereInput = {};
-    if (!isAdmin) {
-      where.userId = actor.id;
-    } else if (query.userId) {
-      where.userId = query.userId;
-    }
+  //   const tagFilters: string[] = [];
+  //   if (query.tag) {
+  //     tagFilters.push(query.tag);
+  //   }
+  //   const rawTags = (query as { tags?: string[] | string }).tags;
+  //   if (Array.isArray(rawTags)) {
+  //     tagFilters.push(...rawTags);
+  //   } else if (typeof rawTags === 'string') {
+  //     tagFilters.push(
+  //       ...rawTags
+  //         .split(',')
+  //         .map((item) => item.trim())
+  //         .filter(Boolean),
+  //     );
+  //   }
+  //   if (tagFilters.length) {
+  //     where.tags = {
+  //       hasSome: Array.from(new Set(tagFilters)),
+  //     };
+  //   }
 
-    if (query.type) {
-      where.type = query.type;
-    }
+  //   if (query.search?.trim()) {
+  //     const search = query.search.trim();
+  //     where.OR = [
+  //       { name: { contains: search, mode: 'insensitive' } },
+  //       { description: { contains: search, mode: 'insensitive' } },
+  //     ];
+  //   }
 
-    if (query.status) {
-      where.status = query.status;
-    }
+  //   const [total, data] = await this.prisma.$transaction([
+  //     this.prisma.document.count({ where }),
+  //     this.prisma.document.findMany({
+  //       where,
+  //       orderBy: { createdAt: 'desc' },
+  //       skip,
+  //       take: limit,
+  //     }),
+  //   ]);
 
-    if (query.appointmentId) {
-      where.appointmentId = query.appointmentId;
-    }
+  //   return sendResponse('Documents retrieved successfully', {
+  //     data,
+  //     meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
+  //   });
+  // }
 
-    if (query.invoiceId) {
-      where.invoiceId = query.invoiceId;
-    }
+  // async getOne(id: string, actor: Pick<User, 'id' | 'role'>) {
+  //   const document = await this.prisma.document.findUnique({
+  //     where: { id },
+  //   });
 
-    const tagFilters: string[] = [];
-    if (query.tag) {
-      tagFilters.push(query.tag);
-    }
-    const rawTags = (query as { tags?: string[] | string }).tags;
-    if (Array.isArray(rawTags)) {
-      tagFilters.push(...rawTags);
-    } else if (typeof rawTags === 'string') {
-      tagFilters.push(
-        ...rawTags
-          .split(',')
-          .map((item) => item.trim())
-          .filter(Boolean),
-      );
-    }
-    if (tagFilters.length) {
-      where.tags = {
-        hasSome: Array.from(new Set(tagFilters)),
-      };
-    }
+  //   if (!document) {
+  //     throw new NotFoundException('Document not found');
+  //   }
 
-    if (query.search?.trim()) {
-      const search = query.search.trim();
-      where.OR = [
-        { name: { contains: search, mode: 'insensitive' } },
-        { description: { contains: search, mode: 'insensitive' } },
-      ];
-    }
+  //   const isAdmin = actor.role === UserRole.ADMIN;
+  //   if (!isAdmin && document.userId !== actor.id) {
+  //     throw new ForbiddenException('Access denied');
+  //   }
 
-    const [total, data] = await this.prisma.$transaction([
-      this.prisma.document.count({ where }),
-      this.prisma.document.findMany({
-        where,
-        orderBy: { createdAt: 'desc' },
-        skip,
-        take: limit,
-      }),
-    ]);
+  //   return sendResponse('Document retrieved successfully', document);
+  // }
 
-    return sendResponse('Documents retrieved successfully', {
-      data,
-      meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
-    });
-  }
+  // async update(
+  //   id: string,
+  //   dto: UpdateDocumentDto,
+  //   actor: Pick<User, 'id' | 'role'>,
+  // ) {
+  //   const document = await this.prisma.document.findUnique({
+  //     where: { id },
+  //     select: { id: true, userId: true },
+  //   });
 
-  async getOne(id: string, actor: Pick<User, 'id' | 'role'>) {
-    const document = await this.prisma.document.findUnique({
-      where: { id },
-    });
+  //   if (!document) {
+  //     throw new NotFoundException('Document not found');
+  //   }
 
-    if (!document) {
-      throw new NotFoundException('Document not found');
-    }
+  //   const isAdmin = actor.role === UserRole.ADMIN;
+  //   if (!isAdmin && document.userId !== actor.id) {
+  //     throw new ForbiddenException('Access denied');
+  //   }
 
-    const isAdmin = actor.role === UserRole.ADMIN;
-    if (!isAdmin && document.userId !== actor.id) {
-      throw new ForbiddenException('Access denied');
-    }
+  //   const updated = await this.prisma.document.update({
+  //     where: { id: document.id },
+  //     data: {
+  //       appointmentId: dto.appointmentId ?? undefined,
+  //       invoiceId: dto.invoiceId ?? undefined,
+  //       name: dto.name ?? undefined,
+  //       type: dto.type ?? undefined,
+  //       status: dto.status ?? undefined,
+  //       tags: dto.tags ?? undefined,
+  //       description: dto.description ?? undefined,
+  //     },
+  //   });
 
-    return sendResponse('Document retrieved successfully', document);
-  }
+  //   return sendResponse('Document updated successfully', updated);
+  // }
 
-  async update(
-    id: string,
-    dto: UpdateDocumentDto,
-    actor: Pick<User, 'id' | 'role'>,
-  ) {
-    const document = await this.prisma.document.findUnique({
-      where: { id },
-      select: { id: true, userId: true },
-    });
+  // async remove(id: string, actor: Pick<User, 'id' | 'role'>) {
+  //   const document = await this.prisma.document.findUnique({
+  //     where: { id },
+  //     select: { id: true, userId: true, fileUrls: true },
+  //   });
 
-    if (!document) {
-      throw new NotFoundException('Document not found');
-    }
+  //   if (!document) {
+  //     throw new NotFoundException('Document not found');
+  //   }
 
-    const isAdmin = actor.role === UserRole.ADMIN;
-    if (!isAdmin && document.userId !== actor.id) {
-      throw new ForbiddenException('Access denied');
-    }
+  //   const isAdmin = actor.role === UserRole.ADMIN;
+  //   if (!isAdmin && document.userId !== actor.id) {
+  //     throw new ForbiddenException('Access denied');
+  //   }
 
-    const updated = await this.prisma.document.update({
-      where: { id: document.id },
-      data: {
-        appointmentId: dto.appointmentId ?? undefined,
-        invoiceId: dto.invoiceId ?? undefined,
-        name: dto.name ?? undefined,
-        type: dto.type ?? undefined,
-        status: dto.status ?? undefined,
-        tags: dto.tags ?? undefined,
-        description: dto.description ?? undefined,
-      },
-    });
+  //   const filePath = this.extractSupabasePath(document.fileUrls);
+  //   if (filePath) {
+  //     await deleteFilesFromSupabase([filePath], this.configService);
+  //   }
 
-    return sendResponse('Document updated successfully', updated);
-  }
+  //   await this.prisma.document.delete({ where: { id: document.id } });
 
-  async remove(id: string, actor: Pick<User, 'id' | 'role'>) {
-    const document = await this.prisma.document.findUnique({
-      where: { id },
-      select: { id: true, userId: true, fileUrl: true },
-    });
+  //   return sendResponse('Document deleted successfully');
+  // }
 
-    if (!document) {
-      throw new NotFoundException('Document not found');
-    }
-
-    const isAdmin = actor.role === UserRole.ADMIN;
-    if (!isAdmin && document.userId !== actor.id) {
-      throw new ForbiddenException('Access denied');
-    }
-
-    const filePath = this.extractSupabasePath(document.fileUrl);
-    if (filePath) {
-      await deleteFilesFromSupabase([filePath], this.configService);
-    }
-
-    await this.prisma.document.delete({ where: { id: document.id } });
-
-    return sendResponse('Document deleted successfully');
-  }
-
-  private extractSupabasePath(fileUrl: string) {
-    if (!fileUrl) return null;
-    const marker = '/storage/v1/object/public/attachments/';
-    const idx = fileUrl.indexOf(marker);
-    if (idx === -1) return null;
-    const path = fileUrl.slice(idx + marker.length);
-    return decodeURIComponent(path.split('?')[0]);
-  }
+  // private extractSupabasePath(fileUrl: string) {
+  //   if (!fileUrl) return null;
+  //   const marker = '/storage/v1/object/public/attachments/';
+  //   const idx = fileUrl.indexOf(marker);
+  //   if (idx === -1) return null;
+  //   const path = fileUrl.slice(idx + marker.length);
+  //   return decodeURIComponent(path.split('?')[0]);
+  // }
 }

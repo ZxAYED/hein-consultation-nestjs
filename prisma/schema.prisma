@@ -97,10 +97,7 @@ model Document {
   name          String
   type          DocumentType
   status        DocumentStatus
-  fileUrl       String
-  fileSizeBytes Int            @default(0)
-  fileFormat    String         @default("unknown")
-  fileMimeType  String         @default("application/octet-stream")
+  fileUrls       String[]
   tags          String[]
   description   String?
 
@@ -110,7 +107,7 @@ model Document {
   user        User            @relation(fields: [userId], references: [id])
   appointment Appointment?    @relation(fields: [appointmentId], references: [id])
   invoice     Invoice?        @relation(fields: [invoiceId], references: [id])
-  audits      DocumentAudit[]
+  // audits      DocumentAudit[]
 }
 
 model DocumentAudit {
@@ -121,7 +118,7 @@ model DocumentAudit {
   metadata      Json?
   createdAt     DateTime            @default(now())
 
-  document Document @relation(fields: [documentId], references: [id])
+  // document Document @relation(fields: [documentId], references: [id])
 }
 
 model Invoice {

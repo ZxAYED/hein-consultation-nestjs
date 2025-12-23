@@ -1,25 +1,12 @@
-/*
-  Warnings:
+-- CreateEnum
+CREATE TYPE "BlogCategory" AS ENUM ('Web_Development', 'Tutorial', 'Design', 'Programming', 'News');
 
-  - The values [Panding] on the enum `InvoiceStatus` will be removed. If these variants are still used in the database, this will fail.
-  - You are about to drop the column `customerId` on the `Document` table. All the data in the column will be lost.
-  - You are about to drop the column `documentLink` on the `Document` table. All the data in the column will be lost.
-  - You are about to drop the column `clientName` on the `Invoice` table. All the data in the column will be lost.
-  - You are about to drop the column `companyName` on the `Invoice` table. All the data in the column will be lost.
-  - You are about to drop the column `createdDate` on the `Invoice` table. All the data in the column will be lost.
-  - You are about to drop the column `email` on the `Invoice` table. All the data in the column will be lost.
-  - You are about to drop the column `invoiceId` on the `Invoice` table. All the data in the column will be lost.
-  - You are about to drop the column `issuedBy` on the `Invoice` table. All the data in the column will be lost.
-  - A unique constraint covering the columns `[invoiceNo]` on the table `Invoice` will be added. If there are existing duplicate values, this will fail.
-  - A unique constraint covering the columns `[appointmentId]` on the table `Invoice` will be added. If there are existing duplicate values, this will fail.
-  - Added the required column `fileUrl` to the `Document` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `userId` to the `Document` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `invoiceNo` to the `Invoice` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `issuedAt` to the `Invoice` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `updatedAt` to the `Invoice` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `userId` to the `Invoice` table without a default value. This is not possible if the table is not empty.
+-- CreateEnum
+CREATE TYPE "BlogTags" AS ENUM ('REACT', 'JAVASCRIPT', 'TYPESCRIPT', 'CSS', 'HTML', 'NODE_JS', 'DESIGN', 'UI_UX');
 
-*/
+-- CreateEnum
+CREATE TYPE "UserRole" AS ENUM ('CUSTOMER', 'ADMIN');
+
 -- CreateEnum
 CREATE TYPE "AppointmentStatus" AS ENUM ('Upcoming', 'Completed', 'Cancelled');
 
@@ -27,54 +14,58 @@ CREATE TYPE "AppointmentStatus" AS ENUM ('Upcoming', 'Completed', 'Cancelled');
 CREATE TYPE "MeetingType" AS ENUM ('Virtual', 'InPerson', 'Phone');
 
 -- CreateEnum
+CREATE TYPE "DocumentType" AS ENUM ('Invoice', 'Appointment', 'Profile', 'Security', 'Compliance');
+
+-- CreateEnum
+CREATE TYPE "DocumentStatus" AS ENUM ('Open', 'InReview', 'Approved');
+
+-- CreateEnum
 CREATE TYPE "DocumentAuditAction" AS ENUM ('CREATED', 'UPDATED', 'STATUS_CHANGED', 'DOWNLOADED', 'DELETED');
+
+-- CreateEnum
+CREATE TYPE "InvoiceStatus" AS ENUM ('Paid', 'Pending', 'Overdue');
 
 -- CreateEnum
 CREATE TYPE "SlotStatus" AS ENUM ('Available', 'Booked', 'Disabled');
 
--- AlterEnum
-ALTER TYPE "DocumentType" ADD VALUE 'Compliance';
+-- CreateEnum
+CREATE TYPE "InvoicePaymentType" AS ENUM ('Cash', 'BankTransfer');
 
--- AlterEnum
-BEGIN;
-CREATE TYPE "InvoiceStatus_new" AS ENUM ('Paid', 'Pending', 'Overdue');
-ALTER TABLE "Invoice" ALTER COLUMN "status" TYPE "InvoiceStatus_new" USING ("status"::text::"InvoiceStatus_new");
-ALTER TYPE "InvoiceStatus" RENAME TO "InvoiceStatus_old";
-ALTER TYPE "InvoiceStatus_new" RENAME TO "InvoiceStatus";
-DROP TYPE "public"."InvoiceStatus_old";
-COMMIT;
+-- CreateEnum
+CREATE TYPE "BlogStatus" AS ENUM ('Schedule', 'Publish');
 
--- DropForeignKey
-ALTER TABLE "public"."Document" DROP CONSTRAINT "Document_customerId_fkey";
+-- CreateTable
+CREATE TABLE "User" (
+    "id" TEXT NOT NULL,
+    "firstName" TEXT NOT NULL,
+    "lastName" TEXT NOT NULL,
+    "email" TEXT NOT NULL,
+    "role" "UserRole" NOT NULL DEFAULT 'CUSTOMER',
+    "companyName" TEXT NOT NULL,
+    "image" TEXT,
+    "street" TEXT,
+    "city" TEXT,
+    "zip" TEXT,
+    "country" TEXT,
+    "phoneNumber" TEXT NOT NULL,
+    "vatUid" TEXT,
+    "companyRegistrationNumber" TEXT,
+    "password" TEXT NOT NULL,
+    "subject" TEXT,
+    "registrationOtp" TEXT,
+    "registrationOtpExpireIn" TIMESTAMP(3),
+    "loginOtp" TEXT,
+    "loginOtpExpireIn" TIMESTAMP(3),
+    "resetPasswordOtp" TEXT,
+    "resetPasswordOtpExpireIn" TIMESTAMP(3),
+    "isVerified" BOOLEAN NOT NULL DEFAULT false,
+    "isBlocked" BOOLEAN NOT NULL DEFAULT false,
+    "isDeleted" BOOLEAN NOT NULL DEFAULT false,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
 
--- DropForeignKey
-ALTER TABLE "public"."Invoice" DROP CONSTRAINT "Invoice_email_fkey";
-
--- DropIndex
-DROP INDEX "public"."Invoice_invoiceId_key";
-
--- AlterTable
-ALTER TABLE "Document" DROP COLUMN "customerId",
-DROP COLUMN "documentLink",
-ADD COLUMN     "appointmentId" TEXT,
-ADD COLUMN     "fileUrl" TEXT NOT NULL,
-ADD COLUMN     "invoiceId" TEXT,
-ADD COLUMN     "userId" TEXT NOT NULL,
-ALTER COLUMN "description" DROP NOT NULL;
-
--- AlterTable
-ALTER TABLE "Invoice" DROP COLUMN "clientName",
-DROP COLUMN "companyName",
-DROP COLUMN "createdDate",
-DROP COLUMN "email",
-DROP COLUMN "invoiceId",
-DROP COLUMN "issuedBy",
-ADD COLUMN     "appointmentId" TEXT,
-ADD COLUMN     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-ADD COLUMN     "invoiceNo" TEXT NOT NULL,
-ADD COLUMN     "issuedAt" TIMESTAMP(3) NOT NULL,
-ADD COLUMN     "updatedAt" TIMESTAMP(3) NOT NULL,
-ADD COLUMN     "userId" TEXT NOT NULL;
+    CONSTRAINT "User_pkey" PRIMARY KEY ("id")
+);
 
 -- CreateTable
 CREATE TABLE "ScheduleSlot" (
@@ -104,10 +95,32 @@ CREATE TABLE "Appointment" (
     "meetingType" "MeetingType" NOT NULL,
     "status" "AppointmentStatus" NOT NULL,
     "note" TEXT,
+    "attachments" JSONB,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
 
     CONSTRAINT "Appointment_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Document" (
+    "id" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "appointmentId" TEXT,
+    "invoiceId" TEXT,
+    "name" TEXT NOT NULL,
+    "type" "DocumentType" NOT NULL,
+    "status" "DocumentStatus" NOT NULL,
+    "fileUrl" TEXT NOT NULL,
+    "fileSizeBytes" INTEGER NOT NULL DEFAULT 0,
+    "fileFormat" TEXT NOT NULL DEFAULT 'unknown',
+    "fileMimeType" TEXT NOT NULL DEFAULT 'application/octet-stream',
+    "tags" TEXT[],
+    "description" TEXT,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Document_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -121,6 +134,45 @@ CREATE TABLE "DocumentAudit" (
 
     CONSTRAINT "DocumentAudit_pkey" PRIMARY KEY ("id")
 );
+
+-- CreateTable
+CREATE TABLE "Invoice" (
+    "id" TEXT NOT NULL,
+    "invoiceNo" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
+    "appointmentId" TEXT,
+    "amount" DOUBLE PRECISION NOT NULL,
+    "status" "InvoiceStatus" NOT NULL,
+    "paymentType" "InvoicePaymentType" NOT NULL,
+    "issuedAt" TIMESTAMP(3) NOT NULL,
+    "dueDate" TIMESTAMP(3) NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Invoice_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Blog" (
+    "id" TEXT NOT NULL,
+    "title" TEXT NOT NULL,
+    "adminId" TEXT NOT NULL,
+    "slug" TEXT NOT NULL,
+    "excerpt" TEXT NOT NULL,
+    "image" TEXT NOT NULL,
+    "content" TEXT NOT NULL,
+    "status" "BlogStatus" NOT NULL,
+    "publishDate" TIMESTAMP(3) NOT NULL,
+    "categories" "BlogCategory"[],
+    "tags" "BlogTags"[],
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "Blog_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateIndex
+CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "ScheduleSlot_appointmentId_key" ON "ScheduleSlot"("appointmentId");
@@ -146,6 +198,9 @@ CREATE INDEX "Invoice_appointmentId_idx" ON "Invoice"("appointmentId");
 -- CreateIndex
 CREATE UNIQUE INDEX "Invoice_appointmentId_key" ON "Invoice"("appointmentId");
 
+-- CreateIndex
+CREATE UNIQUE INDEX "Blog_slug_key" ON "Blog"("slug");
+
 -- AddForeignKey
 ALTER TABLE "Appointment" ADD CONSTRAINT "Appointment_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
@@ -169,3 +224,6 @@ ALTER TABLE "Invoice" ADD CONSTRAINT "Invoice_userId_fkey" FOREIGN KEY ("userId"
 
 -- AddForeignKey
 ALTER TABLE "Invoice" ADD CONSTRAINT "Invoice_appointmentId_fkey" FOREIGN KEY ("appointmentId") REFERENCES "Appointment"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Blog" ADD CONSTRAINT "Blog_adminId_fkey" FOREIGN KEY ("adminId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
