@@ -476,23 +476,27 @@ export class UserService {
     return sendResponse('Role Changed Successfully');
   }
 
-  async findAll(page?: number, limit?: number) {
+  async findAll(page?: number, limit?: number, isBlocked?: boolean) {
+    const where: any = {};
+
+    // 🔥 isBlocked filter (dynamic)
+    if (isBlocked !== undefined) {
+      where.isBlocked = isBlocked;
+    }
+
     const totalItems = await this.prisma.user.count({
-      where: {
-        isBlocked: false,
-        isDeleted: false,
-      },
+      where,
     });
 
     const { skip, take, meta } = getPagination(page, limit, totalItems);
 
     const data = await this.prisma.user.findMany({
-      where: {
-        isBlocked: false,
-        isDeleted: false,
-      },
+      where,
       skip,
       take,
+      orderBy: {
+        createdAt: 'desc',
+      },
     });
 
     return sendResponse('All user fetched successfully', { data, meta });
