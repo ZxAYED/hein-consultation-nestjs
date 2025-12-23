@@ -8,29 +8,21 @@ import {
 } from 'class-validator';
 
 export class CreateDocumentDto {
-  @IsOptional()
-  @IsString()
-  userId?: string;
 
-  @IsOptional()
   @IsString()
-  appointmentId?: string;
+  appointmentId: string;
 
   @IsOptional()
   @IsString()
   invoiceId?: string;
 
-  @IsOptional()
   @IsString()
-  name?: string;
+  name: string;
 
   @IsEnum(DocumentType)
   @IsNotEmpty()
   type: DocumentType;
 
-  @IsEnum(DocumentStatus)
-  @IsNotEmpty()
-  status: DocumentStatus;
 
   @IsOptional()
   @IsArray()

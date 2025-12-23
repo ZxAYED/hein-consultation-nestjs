@@ -38,7 +38,7 @@ export class AppointmentController {
     FilesInterceptor('files', 10, { storage: multer.memoryStorage() }),
   )
   async create(
-    @Req() req: Request,
+    @Req() req: Request & { user: any },
     @UploadedFiles() files?: Express.Multer.File[],
   ) {
     const rawBody: any = req.body ?? {};
@@ -53,10 +53,12 @@ export class AppointmentController {
       }
     }
 
-    const dtoObject = { ...parsed };
+    const dtoObject = { ...parsed , userId: req.user.id };
     delete (dtoObject as any).data;
 
     const dto = plainToInstance(CreateAppointmentDto, dtoObject);
+
+    console.log(dtoObject)
     const errors = validateSync(dto, {
       whitelist: true,
       forbidNonWhitelisted: true,
@@ -65,6 +67,9 @@ export class AppointmentController {
     if (errors.length) {
       throw new BadRequestException(errors);
     }
+
+    dto.userId = req.user.id as string;
+    // console.log(dto)
 
     return this.appointmentService.create(dto, files ?? []);
   }

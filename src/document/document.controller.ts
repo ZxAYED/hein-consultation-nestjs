@@ -10,11 +10,12 @@ import {
   Query,
   Req,
   UploadedFile,
+  UploadedFiles,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { UserRole } from '@prisma/client';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
+import { DocumentStatus, UserRole } from '@prisma/client';
 import { plainToInstance } from 'class-transformer';
 import { validateSync } from 'class-validator';
 import type { Request } from 'express';
@@ -26,112 +27,110 @@ import { DocumentService } from './document.service';
 import { CreateDocumentDto } from './dto/create-document.dto';
 import { GetDocumentsQueryDto } from './dto/get-documents-query.dto';
 import { UpdateDocumentDto } from './dto/update-document.dto';
+import { uploadFileToSupabase } from 'src/utils/common/uploadFileToSupabase';
+import { ConfigService } from '@nestjs/config';
 
 @Controller('documents')
 export class DocumentController {
-  constructor(private readonly documentService: DocumentService) {}
+  constructor(
+    private readonly documentService: DocumentService,
+    private configService: ConfigService,
+  ) {}
+
+  // @UseGuards(AuthGuard)
+  // @Roles(ROLE.CUSTOMER, ROLE.ADMIN)
+  // @Post()
+  // @UseInterceptors(FileInterceptor('file', { storage: multer.memoryStorage() }))
+  // async create(
+  //   @Req() req: Request & { user: any },
+  //   @Body() body: any,
+  //   @UploadedFile() file: Express.Multer.File,
+  // ) {
+  //   if (!body?.data) throw new BadRequestException('Body data is required');
+  //   if (!file) throw new BadRequestException('File is required');
+
+  //   let parsed: CreateDocumentDto;
+  //   try {
+  //     parsed = JSON.parse(body.data);
+  //   } catch {
+  //     throw new BadRequestException('Invalid JSON in body data');
+  //   }
+
+  //   // Generate unique slug
+
+  //   // Upload image
+  //   const fileLink = await uploadFileToSupabase(
+  //     file,
+  //     this.configService,
+  //     'blog',
+  //   );
+
+  //   const documentData ={
+  //     ...parsed,
+  //     fileLink,
+  //     userId: req?.user?.id,
+  //   };
+  //   console.log("🚀 ~ DocumentController ~ create ~ documentData:", documentData)
+
+  //   // const document = await this.documentService.create(documentData);
+  //   // return document
+
+  // }
 
   @UseGuards(AuthGuard)
   @Roles(ROLE.CUSTOMER, ROLE.ADMIN)
   @Post()
-  @UseInterceptors(FileInterceptor('file', { storage: multer.memoryStorage() }))
+  @UseInterceptors(
+    FilesInterceptor('files', 10, {
+      // 10 = max file limit
+      storage: multer.memoryStorage(),
+    }),
+  )
   async create(
-    @Req() req: Request & { user: { id: string; role: UserRole } },
-    @UploadedFile() file?: Express.Multer.File,
+    @Req() req: Request & { user: any },
+    @Body() body: any,
+    @UploadedFiles() files: Express.Multer.File[],
   ) {
-    const rawBody: any = req.body ?? {};
+    if (!body?.data) throw new BadRequestException('Body data is required');
+    if (!files || files.length === 0)
+      throw new BadRequestException('At least one file is required');
 
-    let payload: Record<string, unknown> = { ...rawBody };
-    if (typeof rawBody?.data === 'string' && rawBody.data.trim().length) {
-      try {
-        payload = { ...payload, ...JSON.parse(rawBody.data) };
-      } catch {
-        throw new BadRequestException('Invalid JSON in data field');
-      }
+    let parsed: any;
+    try {
+      parsed = JSON.parse(body.data);
+    } catch {
+      throw new BadRequestException('Invalid JSON in body data');
     }
 
-    delete (payload as any).data;
+    // upload all files
+    const fileLinks = await Promise.all(
+      files.map((file) =>
+        uploadFileToSupabase(file, this.configService, 'blog'),
+      ),
+    );
 
-    const normalizeTags = (value: unknown): string[] | undefined => {
-      if (Array.isArray(value)) {
-        return value.map((item) => String(item).trim()).filter(Boolean);
-      }
-      if (typeof value === 'string') {
-        const trimmed = value.trim();
-        if (!trimmed) return [];
-        if (trimmed.startsWith('[')) {
-          try {
-            const parsed = JSON.parse(trimmed);
-            if (Array.isArray(parsed)) {
-              return parsed
-                .map((item) => String(item).trim())
-                .filter(Boolean);
-            }
-          } catch {
-            // Fall back to comma-split below.
-          }
-        }
-        return trimmed.split(',').map((item) => item.trim()).filter(Boolean);
-      }
-      return undefined;
-    };
+    const documentData = {
+  name: parsed.name,
+  type: parsed.type,
+  status: DocumentStatus.Open, // required
+  fileUrls: fileLinks,          // required
+  tags: parsed.tags ?? [],      // required
+  description: parsed.description ?? null,
 
-    const normalizedTags = normalizeTags(payload.tags);
-    if (normalizedTags) {
-      payload.tags = normalizedTags;
-    }
+  user: { connect: { id: req.user.id } },
 
-    const dto = plainToInstance(CreateDocumentDto, payload);
-    const errors = validateSync(dto, {
-      whitelist: true,
-      forbidNonWhitelisted: true,
-    });
+  ...(parsed.appointmentId && { appointment: { connect: { id: parsed.appointmentId } } }),
+  ...(parsed.invoiceId && { invoice: { connect: { id: parsed.invoiceId } } }),
+};
 
-    if (errors.length) {
-      throw new BadRequestException(errors);
-    }
 
-    return this.documentService.create(dto, file, req.user);
+    // console.log(
+    //   '🚀 ~ DocumentController ~ create ~ documentData:',
+    //   documentData,
+    // );
+
+    // return this.
+    return this.documentService.create(documentData);
   }
-
-  @UseGuards(AuthGuard)
-  @Roles(ROLE.CUSTOMER, ROLE.ADMIN)
-  @Get()
-  list(
-    @Query() query: GetDocumentsQueryDto,
-    @Req() req: Request & { user: { id: string; role: UserRole } },
-  ) {
-    return this.documentService.list(query, req.user);
-  }
-
-  @UseGuards(AuthGuard)
-  @Roles(ROLE.CUSTOMER, ROLE.ADMIN)
-  @Get(':id')
-  getOne(
-    @Param('id') id: string,
-    @Req() req: Request & { user: { id: string; role: UserRole } },
-  ) {
-    return this.documentService.getOne(id, req.user);
-  }
-
-  @UseGuards(AuthGuard)
-  @Roles(ROLE.CUSTOMER, ROLE.ADMIN)
-  @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() dto: UpdateDocumentDto,
-    @Req() req: Request & { user: { id: string; role: UserRole } },
-  ) {
-    return this.documentService.update(id, dto, req.user);
-  }
-
-  @UseGuards(AuthGuard)
-  @Roles(ROLE.CUSTOMER, ROLE.ADMIN)
-  @Delete(':id')
-  remove(
-    @Param('id') id: string,
-    @Req() req: Request & { user: { id: string; role: UserRole } },
-  ) {
-    return this.documentService.remove(id, req.user);
-  }
+ 
 }

@@ -45,6 +45,7 @@ export class AppointmentService {
   ) {}
 
   async create(dto: CreateAppointmentDto, files: Express.Multer.File[] = []) {
+    console.log(dto)
     const attachments = await this.uploadAttachments(files);
 
     if (!Object.values(ServiceNames).includes(dto.serviceName)) {
