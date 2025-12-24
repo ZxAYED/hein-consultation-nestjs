@@ -53,12 +53,12 @@ export class AppointmentController {
       }
     }
 
-    const dtoObject = { ...parsed , userId: req.user.id };
+    const dtoObject = { ...parsed, userId: req.user.id };
     delete (dtoObject as any).data;
 
     const dto = plainToInstance(CreateAppointmentDto, dtoObject);
 
-    console.log(dtoObject)
+    console.log(dtoObject);
     const errors = validateSync(dto, {
       whitelist: true,
       forbidNonWhitelisted: true,

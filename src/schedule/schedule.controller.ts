@@ -23,8 +23,6 @@ import { ScheduleService } from './schedule.service';
 export class ScheduleController {
   constructor(private readonly scheduleService: ScheduleService) {}
 
-
-
   @Get('slots')
   @UseGuards(AuthGuard)
   getSlots(@Query() query: GetSlotsQueryDto) {

@@ -66,4 +66,12 @@ export class GetDocumentsQueryDto {
   @IsOptional()
   @IsString()
   invoiceId?: string;
+
+  @IsOptional()
+  @IsString()
+  appointmentNo?: string;
+
+  @IsOptional()
+  @IsString()
+  invoiceNo?: string;
 }

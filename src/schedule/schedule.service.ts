@@ -129,10 +129,7 @@ export class ScheduleService {
       where: {
         serviceName: query.serviceName,
         date,
-        OR: [
-          { status: SlotStatus.Booked },
-          { appointmentId: { not: null } },
-        ],
+        OR: [{ status: SlotStatus.Booked }, { appointmentId: { not: null } }],
       },
     });
 

@@ -27,8 +27,11 @@ export class DocumentService {
     actor: Pick<User, 'id'>,
   ) {
     try {
-      const appointmentId = await this.resolveAppointmentId(dto.appointmentId);
-      const invoiceId = await this.resolveInvoiceId(dto.invoiceId);
+      const appointmentRef = dto.appointmentId;
+      const invoiceRef = dto.invoiceId;
+
+      const appointmentId = await this.resolveAppointmentId(appointmentRef);
+      const invoiceId = await this.resolveInvoiceId(invoiceRef);
 
       const created = await this.prisma.document.create({
         data: {
@@ -65,10 +68,9 @@ export class DocumentService {
     const isAdmin = actor.role === UserRole.ADMIN;
     const where: Prisma.DocumentWhereInput = {};
 
+    // If the user is not an admin, fetch only their documents
     if (!isAdmin) {
       where.userId = actor.id;
-    } else if (query.userId) {
-      where.userId = query.userId;
     }
 
     if (query.type) {
@@ -87,6 +89,14 @@ export class DocumentService {
       where.invoiceId = query.invoiceId;
     }
 
+    if (query.appointmentNo) {
+      where.appointment = { appointmentNo: query.appointmentNo };
+    }
+
+    if (query.invoiceNo) {
+      where.invoice = { invoiceNo: query.invoiceNo };
+    }
+
     const tagFilters = new Set<string>();
     if (query.tag) {
       tagFilters.add(query.tag);
@@ -98,6 +108,7 @@ export class DocumentService {
       where.tags = { hasSome: Array.from(tagFilters) };
     }
 
+    // Full-text search in name or description fields
     if (query.search?.trim()) {
       const search = query.search.trim();
       where.OR = [
@@ -107,6 +118,7 @@ export class DocumentService {
     }
 
     const totalItems = await this.prisma.document.count({ where });
+
     const { skip, take, meta } = getPagination(
       query.page,
       query.limit,
@@ -115,6 +127,29 @@ export class DocumentService {
 
     const data = await this.prisma.document.findMany({
       where,
+      select: {
+        id: true,
+        name: true,
+        type: true,
+        status: true,
+        format: true,
+        size: true,
+        fileUrls: true,
+        tags: true,
+        description: true,
+        createdAt: true,
+        updatedAt: true,
+        appointment: {
+          select: {
+            appointmentNo: true,
+            serviceName: true,
+            id: true,
+          },
+        },
+        invoice: {
+          select: { invoiceNo: true, amount: true, id: true },
+        },
+      },
       orderBy: { createdAt: 'desc' },
       skip,
       take,
@@ -123,11 +158,7 @@ export class DocumentService {
     return sendResponse('Documents retrieved successfully', { data, meta });
   }
 
-  async update(
-    id: string,
-    dto: UpdateDocumentDto,
-    actor: Pick<User, 'id' | 'role'>,
-  ) {
+  async update(id: string, dto: UpdateDocumentDto) {
     const hasUpdates = Object.values(dto).some((value) => value !== undefined);
     if (!hasUpdates) {
       throw new BadRequestException('No update fields provided');
@@ -143,26 +174,19 @@ export class DocumentService {
         throw new NotFoundException('Document not found');
       }
 
-      const isAdmin = actor.role === UserRole.ADMIN;
-      if (!isAdmin && document.userId !== actor.id) {
-        throw new ForbiddenException('Access denied');
-      }
-
       const appointmentId = await this.resolveAppointmentId(dto.appointmentId);
       const invoiceId = await this.resolveInvoiceId(dto.invoiceId);
 
       const updated = await this.prisma.document.update({
         where: { id: document.id },
         data: {
-          appointmentId: appointmentId ?? undefined,
-          invoiceId: invoiceId ?? undefined,
-          name: dto.name ?? undefined,
-          type: dto.type ?? undefined,
-          status: dto.status ?? undefined,
-          format: dto.format ?? undefined,
-          size: dto.size ?? undefined,
-          tags: dto.tags ?? undefined,
-          description: dto.description ?? undefined,
+          appointmentId: appointmentId,
+          invoiceId: invoiceId,
+          name: dto.name,
+          type: dto.type,
+          status: dto.status,
+          tags: dto.tags,
+          description: dto.description,
         },
       });
 
@@ -180,7 +204,7 @@ export class DocumentService {
     }
   }
 
-  async remove(id: string, actor: Pick<User, 'id' | 'role'>) {
+  async remove(id: string) {
     try {
       const document = await this.prisma.document.findUnique({
         where: { id },
@@ -189,11 +213,6 @@ export class DocumentService {
 
       if (!document) {
         throw new NotFoundException('Document not found');
-      }
-
-      const isAdmin = actor.role === UserRole.ADMIN;
-      if (!isAdmin && document.userId !== actor.id) {
-        throw new ForbiddenException('Access denied');
       }
 
       await this.cleanupUploadedFiles(document.fileUrls ?? []);
@@ -262,7 +281,7 @@ export class DocumentService {
     );
     const parts = path.split('/').filter(Boolean);
     if (parts.length < 2) return null;
-    parts.shift();
+    parts.shift(); // drop bucket name
     return parts.join('/');
   }
 

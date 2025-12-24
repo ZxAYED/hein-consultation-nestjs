@@ -118,22 +118,15 @@ export class DocumentController {
   @UseGuards(AuthGuard)
   @Roles(ROLE.CUSTOMER, ROLE.ADMIN)
   @Patch(':id')
-  async update(
-    @Param('id') id: string,
-    @Body() dto: UpdateDocumentDto,
-    @Req() req: Request & { user: { id: string; role: UserRole } },
-  ) {
-    return this.documentService.update(id, dto, req.user);
+  async update(@Param('id') id: string, @Body() dto: UpdateDocumentDto) {
+    return this.documentService.update(id, dto);
   }
 
   @UseGuards(AuthGuard)
   @Roles(ROLE.CUSTOMER, ROLE.ADMIN)
   @Delete(':id')
-  async remove(
-    @Param('id') id: string,
-    @Req() req: Request & { user: { id: string; role: UserRole } },
-  ) {
-    return this.documentService.remove(id, req.user);
+  async remove(@Param('id') id: string) {
+    return this.documentService.remove(id);
   }
 
   private resolveFormat(files: Express.Multer.File[]) {
