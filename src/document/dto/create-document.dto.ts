@@ -5,11 +5,13 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
+  IsUUID,
 } from 'class-validator';
 
 export class CreateDocumentDto {
   @IsOptional()
   @IsString()
+  @IsUUID()
   appointmentId?: string;
 
   @IsOptional()

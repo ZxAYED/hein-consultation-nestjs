@@ -6,17 +6,15 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  IsUUID,
   Min,
 } from 'class-validator';
 
 export class CreateInvoiceDto {
   @IsString()
   @IsNotEmpty()
+  @IsUUID()
   appointmentId: string;
-
-  @IsOptional()
-  @IsString()
-  invoiceNo?: string;
 
   @Type(() => Number)
   @IsNumber()
@@ -28,6 +26,10 @@ export class CreateInvoiceDto {
 
   @IsEnum(InvoicePaymentType)
   paymentType: InvoicePaymentType;
+
+  @IsString()
+  @IsNotEmpty()
+  issuedBy: string;
 
   @IsOptional()
   @IsString()

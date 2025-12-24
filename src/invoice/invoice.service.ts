@@ -54,12 +54,13 @@ export class InvoiceService {
 
       const invoice = await tx.invoice.create({
         data: {
-          invoiceNo: dto.invoiceNo?.trim() || this.generateInvoiceNo(),
+          invoiceNo: this.generateInvoiceNo(),
           userId: appointment.userId,
           appointmentId: appointment.id,
           amount: dto.amount,
           status: dto.status,
           paymentType: dto.paymentType,
+          issuedBy: dto.issuedBy,
           issuedAt,
           dueDate,
         },
@@ -219,6 +220,7 @@ export class InvoiceService {
         amount: dto.amount ?? undefined,
         status: dto.status ?? undefined,
         paymentType: dto.paymentType ?? undefined,
+        issuedBy: dto.issuedBy ?? undefined,
         issuedAt,
         dueDate,
       },
