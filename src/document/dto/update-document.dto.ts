@@ -1,5 +1,5 @@
 import { DocumentStatus, DocumentType } from '@prisma/client';
-import { IsArray, IsEnum, IsOptional, IsString } from 'class-validator';
+import { IsArray, IsEnum, IsInt, IsOptional, IsString, Min } from 'class-validator';
 
 export class UpdateDocumentDto {
   @IsOptional()
@@ -21,6 +21,15 @@ export class UpdateDocumentDto {
   @IsOptional()
   @IsEnum(DocumentStatus)
   status?: DocumentStatus;
+
+  @IsOptional()
+  @IsString()
+  format?: string;
+
+  @IsOptional()
+  @IsInt()
+  @Min(0)
+  size?: number;
 
   @IsOptional()
   @IsArray()

@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
@@ -40,10 +41,17 @@ export class ScheduleController {
     return this.scheduleService.generateSlots(generateSlotsDto, req.user.id);
   }
 
-    @UseGuards(AuthGuard)
+  @UseGuards(AuthGuard)
   @Roles(ROLE.ADMIN)
   @Patch('slots/:id')
   disableSlot(@Param('id') id: string, @Body() body: { status: SlotStatus }) {
     return this.scheduleService.updateSlotStatus(id, body.status);
+  }
+
+  @UseGuards(AuthGuard)
+  @Roles(ROLE.ADMIN)
+  @Delete('slots')
+  deleteSlots(@Query() query: GetSlotsQueryDto) {
+    return this.scheduleService.deleteSlotsByDay(query);
   }
 }

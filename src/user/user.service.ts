@@ -296,10 +296,6 @@ export class UserService {
       email: result.email,
       role: result.role,
     });
-    console.log(
-      '🚀 ~ UserService ~ verifyLoginOtp ~ access_token:',
-      access_token,
-    );
 
     return sendResponse('User Verified Successfully', { access_token });
   }
