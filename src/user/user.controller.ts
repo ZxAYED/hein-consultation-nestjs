@@ -193,6 +193,13 @@ export class UserController {
     return this.userService.deleteUser(id);
   }
 
+  @Delete('delete-myself-account')
+  @UseGuards(AuthGuard)
+   @Roles(ROLE.ADMIN, ROLE.CUSTOMER)
+  deleteMyselfAccount(@Req() req: Request & { user: any }) {
+    return this.userService.deleteMyselfAccount(req.user.id);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.userService.findOne(+id);

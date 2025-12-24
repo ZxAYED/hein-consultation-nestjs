@@ -24,6 +24,7 @@ import { Roles } from 'src/common/decorator/rolesDecorator';
 import { AuthGuard } from 'src/common/guards/auth/auth.guard';
 import { ROLE } from 'src/user/entities/role.entity';
 import { uploadFileToSupabase } from 'src/utils/common/uploadFileToSupabase';
+import { PrismaService } from './../prisma/prisma.service';
 import { DocumentService } from './document.service';
 import { CreateDocumentDto } from './dto/create-document.dto';
 import { GetDocumentsQueryDto } from './dto/get-documents-query.dto';
@@ -34,6 +35,7 @@ export class DocumentController {
   constructor(
     private readonly documentService: DocumentService,
     private configService: ConfigService,
+    private readonly prisma: PrismaService,
   ) {}
 
   @UseGuards(AuthGuard)

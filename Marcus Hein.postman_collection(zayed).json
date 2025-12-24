@@ -1,0 +1,545 @@
+{
+	"info": {
+		"_postman_id": "ad159a05-56a3-431d-955d-e0b16227b31f",
+		"name": "Marcus Hein ( Zayed )",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "39781146",
+		"_collection_link": "https://next-level-4-arms-team.postman.co/workspace/8e12135a-9505-41ce-8b0f-eb129435841e/collection/39781146-ad159a05-56a3-431d-955d-e0b16227b31f?action=share&source=collection_link&creator=39781146"
+	},
+	"item": [
+		{
+			"name": "schedule",
+			"item": [
+				{
+					"name": "create schedule",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{admin-access-token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"serviceName\": \"SAP_CONSULTING_SESSION\",\r\n  \"date\": \"2025-12-26\",\r\n  \"startTime\": \"09:30\",\r\n  \"endTime\": \"17:00\",\r\n  \"durationMin\": 30\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{live-api}}/schedule/generate",
+							"host": [
+								"{{live-api}}"
+							],
+							"path": [
+								"schedule",
+								"generate"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get slots",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{customer-access-token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{base-url}}/schedule/slots?serviceName=SAP_CONSULTING_SESSION&date=2025-12-26",
+							"host": [
+								"{{base-url}}"
+							],
+							"path": [
+								"schedule",
+								"slots"
+							],
+							"query": [
+								{
+									"key": "serviceName",
+									"value": "SAP_CONSULTING_SESSION"
+								},
+								{
+									"key": "date",
+									"value": "2025-12-26"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "update status",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{admin-access-token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{ \"status\": \"Booked\" }",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{live-api}}/schedule/slots/2c3057be-7b0a-4a7e-b763-f0802516721b",
+							"host": [
+								"{{live-api}}"
+							],
+							"path": [
+								"schedule",
+								"slots",
+								"2c3057be-7b0a-4a7e-b763-f0802516721b"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "appointment",
+			"item": [
+				{
+					"name": "get appointments user admin both",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{customer-access-token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{live-api}}/appointments",
+							"host": [
+								"{{live-api}}"
+							],
+							"path": [
+								"appointments"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1",
+									"disabled": true
+								},
+								{
+									"key": "limit",
+									"value": "20",
+									"disabled": true
+								},
+								{
+									"key": "status ",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "serviceName",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "fromDate",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "toDate",
+									"value": "",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "single",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{customer-access-token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{live-api}}/appointments/:id",
+							"host": [
+								"{{live-api}}"
+							],
+							"path": [
+								"appointments",
+								":id"
+							],
+							"query": [
+								{
+									"key": "status ",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "serviceName",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "fromDate",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "toDate",
+									"value": "",
+									"disabled": true
+								}
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "create",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{customer-access-token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "data",
+									"value": "{\n\n \"serviceName\":\"SAP_CONSULTING_SESSION\",\n\"slotId\": \"a82ac4b6-3580-4ee6-bb18-19531e741404\",\n  \"meetingType\": \"Virtual\",\n  \"note\": \"optional\"\n}",
+									"type": "text"
+								},
+								{
+									"key": "files",
+									"type": "file",
+									"src": "/C:/Users/Humayun/Desktop/Marcus Photo/martins-zemlickis-zbukvoF68UY-unsplash.jpg"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{live-api}}/appointments",
+							"host": [
+								"{{live-api}}"
+							],
+							"path": [
+								"appointments"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "patch by customer",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{customer-access-token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"action\": \"cancel | update\",\r\n    \"meetingType\": \"Virtual\",\r\n    \"note\": \"Please call me on WhatsApp first\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{live-api}}/appointments/b9651dbc-6947-49c3-83a4-3c3335b7df10",
+							"host": [
+								"{{live-api}}"
+							],
+							"path": [
+								"appointments",
+								"b9651dbc-6947-49c3-83a4-3c3335b7df10"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "patch by admin",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{admin-access-token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"action\": \"complete\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{live-api}}/appointments/b9651dbc-6947-49c3-83a4-3c3335b7df10",
+							"host": [
+								"{{live-api}}"
+							],
+							"path": [
+								"appointments",
+								"b9651dbc-6947-49c3-83a4-3c3335b7df10"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "documents",
+			"item": [
+				{
+					"name": "patch",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{customer-access-token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"name\": \"Rechnung_2024-03-15.pdf\",\r\n  \"type\": \"Invoice\",\r\n  \"status\": \"InReview\",\r\n  \"tags\": [\"Invoice\", \"Urgent\"],\r\n  \"description\": \"Reviewed by admin\",\r\n//  \"invoiceId\":\"sadas\",\r\n  \"appointmentId\": \"65fe2808-8e99-4d09-afbf-5c75c46ad133\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{live-api}}/documents/4fb06f15-2218-41a7-b386-c0af5e906cef",
+							"host": [
+								"{{live-api}}"
+							],
+							"path": [
+								"documents",
+								"4fb06f15-2218-41a7-b386-c0af5e906cef"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "kupa shamsu",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{customer-access-token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{live-api}}/documents/b9651dbc-6947-49c3-83a4-3c3335b7df10",
+							"host": [
+								"{{live-api}}"
+							],
+							"path": [
+								"documents",
+								"b9651dbc-6947-49c3-83a4-3c3335b7df10"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "create",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{customer-access-token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "data",
+									"value": "{\n  \"name\": \"Test\",\n  \"type\": \"Invoice\",\n  \"tags\": [\"a\", \"b\"],\n  \"description\": \"This is a test document\",\n  \"appointmentId\": \"44122c2e-f46f-4edc-a5b4-62a029fc158e\",\n  \"invoiceId\": null\n}\n",
+									"type": "text"
+								},
+								{
+									"key": "files",
+									"type": "file",
+									"src": "/C:/Users/Humayun/Desktop/Marcus Photo/men.jpg"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{live-api}}/documents",
+							"host": [
+								"{{live-api}}"
+							],
+							"path": [
+								"documents"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get docs user/ admin",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{admin-access-token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{live-api}}/documents?appointmentNo=APPT-1766562567862",
+							"host": [
+								"{{live-api}}"
+							],
+							"path": [
+								"documents"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1",
+									"disabled": true
+								},
+								{
+									"key": "limit",
+									"value": "10",
+									"disabled": true
+								},
+								{
+									"key": "type",
+									"value": "Invoice",
+									"disabled": true
+								},
+								{
+									"key": "appointmentNo",
+									"value": "APPT-1766562567862"
+								},
+								{
+									"key": "search",
+									"value": "name or description",
+									"disabled": true
+								},
+								{
+									"key": "appointmentId",
+									"value": null,
+									"disabled": true
+								},
+								{
+									"key": "invoiceId",
+									"value": null,
+									"disabled": true
+								},
+								{
+									"key": "invoiceNo",
+									"value": null,
+									"disabled": true
+								},
+								{
+									"key": "tags",
+									"value": null,
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base-api",
+			"value": ""
+		},
+		{
+			"key": "customer-access-token",
+			"value": ""
+		},
+		{
+			"key": "live-api",
+			"value": ""
+		},
+		{
+			"key": "admin-access-token",
+			"value": "",
+			"type": "string"
+		}
+	]
+}
