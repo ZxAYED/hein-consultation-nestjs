@@ -86,6 +86,7 @@ model Appointment {
   slot      ScheduleSlot @relation(fields: [slotId], references: [id])
   documents Document[]
   invoice   Invoice?
+  @@index([appointmentNo])
 }
 
 model Document {
@@ -94,12 +95,14 @@ model Document {
   appointmentId String?
   invoiceId     String?
 
-  name          String
-  type          DocumentType
-  status        DocumentStatus
-  fileUrls       String[]
-  tags          String[]
-  description   String?
+  name        String
+  type        DocumentType
+  status      DocumentStatus
+  format      String?
+  size        Int?
+  fileUrls    String[]
+  tags        String[]
+  description String?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -110,16 +113,17 @@ model Document {
   // audits      DocumentAudit[]
 }
 
-model DocumentAudit {
-  id            String              @id @default(uuid())
-  documentId    String
-  action        DocumentAuditAction
-  performedById String
-  metadata      Json?
-  createdAt     DateTime            @default(now())
+// model DocumentAudit {
+//   id            String              @id @default(uuid())
+//   documentId    String
+//   action        DocumentAuditAction
+//   performedById String
+//   metadata      Json?
+//   createdAt     DateTime            @default(now())
 
-  // document Document @relation(fields: [documentId], references: [id])
-}
+//   document    Document @relation(fields: [documentId], references: [id])
+//   performedBy User     @relation(fields: [performedById], references: [id])
+// }
 
 model Invoice {
   id            String  @id @default(uuid())
@@ -142,6 +146,7 @@ model Invoice {
 
   @@unique([appointmentId])
   @@index([appointmentId])
+  @@index([invoiceNo])
 }
 
 model Blog {
@@ -210,14 +215,6 @@ enum DocumentStatus {
   Open
   InReview
   Approved
-}
-
-enum DocumentAuditAction {
-  CREATED
-  UPDATED
-  STATUS_CHANGED
-  DOWNLOADED
-  DELETED
 }
 
 enum InvoiceStatus {

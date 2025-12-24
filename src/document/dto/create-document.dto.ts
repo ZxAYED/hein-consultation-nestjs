@@ -1,4 +1,4 @@
-import { DocumentStatus, DocumentType } from '@prisma/client';
+import { DocumentType } from '@prisma/client';
 import {
   IsArray,
   IsEnum,
@@ -8,21 +8,21 @@ import {
 } from 'class-validator';
 
 export class CreateDocumentDto {
-
+  @IsOptional()
   @IsString()
-  appointmentId: string;
+  appointmentId?: string;
 
   @IsOptional()
   @IsString()
   invoiceId?: string;
 
   @IsString()
+  @IsNotEmpty()
   name: string;
 
   @IsEnum(DocumentType)
   @IsNotEmpty()
   type: DocumentType;
-
 
   @IsOptional()
   @IsArray()

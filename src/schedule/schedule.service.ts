@@ -122,6 +122,35 @@ export class ScheduleService {
     return sendResponse(`Slot ${status} updated successfully`);
   }
 
+  async deleteSlotsByDay(query: GetSlotsQueryDto) {
+    const date = this.parseDay(query.date);
+
+    const bookedCount = await this.prisma.scheduleSlot.count({
+      where: {
+        serviceName: query.serviceName,
+        date,
+        OR: [{ status: SlotStatus.Booked }, { appointmentId: { not: null } }],
+      },
+    });
+
+    if (bookedCount > 0) {
+      throw new ConflictException(
+        'Cannot delete slots with booked appointments',
+      );
+    }
+
+    const result = await this.prisma.scheduleSlot.deleteMany({
+      where: {
+        serviceName: query.serviceName,
+        date,
+      },
+    });
+
+    return sendResponse('Slots deleted successfully', {
+      deletedCount: result.count,
+    });
+  }
+
   private parseDay(dateStr: string) {
     const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateStr);
     if (!match) {

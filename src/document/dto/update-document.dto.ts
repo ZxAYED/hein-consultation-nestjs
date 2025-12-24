@@ -1,5 +1,10 @@
 import { DocumentStatus, DocumentType } from '@prisma/client';
-import { IsArray, IsEnum, IsOptional, IsString } from 'class-validator';
+import {
+  IsArray,
+  IsEnum,
+  IsOptional,
+  IsString
+} from 'class-validator';
 
 export class UpdateDocumentDto {
   @IsOptional()
@@ -8,7 +13,15 @@ export class UpdateDocumentDto {
 
   @IsOptional()
   @IsString()
+  appointmentNo?: string;
+
+  @IsOptional()
+  @IsString()
   invoiceId?: string;
+
+  @IsOptional()
+  @IsString()
+  invoiceNo?: string;
 
   @IsOptional()
   @IsString()
