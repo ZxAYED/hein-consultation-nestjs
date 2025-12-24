@@ -1,40 +1,32 @@
 import {
   IsString,
   IsNotEmpty,
-  IsEnum,
   IsArray,
   ArrayNotEmpty,
-  IsOptional,
-  IsDateString,
+  IsEnum,
 } from 'class-validator';
-import { BlogCategory, BlogTags, BlogStatus } from '@prisma/client';
+import { BlogCategory, BlogTags } from '@prisma/client';
 
 export class CreateBlogDto {
-  @IsString()
-  @IsNotEmpty()
+  @IsString({ message: 'Title must be a string.' })
+  @IsNotEmpty({ message: 'Title is required.' })
   title: string;
 
-  @IsEnum(BlogStatus)
-  status: BlogStatus;
-
-  @IsDateString()
-  publishDate: string;
-
-  @IsArray()
-  @ArrayNotEmpty()
-  @IsEnum(BlogCategory, { each: true })
-  categories: BlogCategory[];
-
-  @IsArray()
-  @IsOptional()
-  @IsEnum(BlogTags, { each: true })
-  tags?: BlogTags[];
-
-  @IsString()
-  @IsNotEmpty()
+  @IsString({ message: 'Excerpt must be a string.' })
+  @IsNotEmpty({ message: 'Excerpt is required.' })
   excerpt: string;
 
-  @IsString()
-  @IsNotEmpty()
+  @IsString({ message: 'Content must be a string.' })
+  @IsNotEmpty({ message: 'Content is required.' })
   content: string;
+
+  @IsArray({ message: 'Categories must be an array.' })
+  @ArrayNotEmpty({ message: 'At least one category is required.' })
+  @IsEnum(BlogCategory, { each: true, message: 'Invalid category provided.' })
+  categories: BlogCategory[];
+
+  @IsArray({ message: 'Tags must be an array.' })
+  @ArrayNotEmpty({ message: 'At least one tag is required.' })
+  @IsEnum(BlogTags, { each: true, message: 'Invalid tag provided.' })
+  tags: BlogTags[];
 }
