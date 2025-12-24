@@ -499,7 +499,7 @@ export class UserService {
       },
     });
 
-    return sendResponse('All user fetched successfully', { data, meta });
+    return sendResponse('Users fetched successfully', { data, meta });
   }
 
   findOne(id: number) {

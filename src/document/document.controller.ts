@@ -1,3 +1,4 @@
+import { PrismaService } from './../prisma/prisma.service';
 import {
   BadRequestException,
   Body,
@@ -35,47 +36,8 @@ export class DocumentController {
   constructor(
     private readonly documentService: DocumentService,
     private configService: ConfigService,
+    private readonly prisma: PrismaService,
   ) {}
-
-  // @UseGuards(AuthGuard)
-  // @Roles(ROLE.CUSTOMER, ROLE.ADMIN)
-  // @Post()
-  // @UseInterceptors(FileInterceptor('file', { storage: multer.memoryStorage() }))
-  // async create(
-  //   @Req() req: Request & { user: any },
-  //   @Body() body: any,
-  //   @UploadedFile() file: Express.Multer.File,
-  // ) {
-  //   if (!body?.data) throw new BadRequestException('Body data is required');
-  //   if (!file) throw new BadRequestException('File is required');
-
-  //   let parsed: CreateDocumentDto;
-  //   try {
-  //     parsed = JSON.parse(body.data);
-  //   } catch {
-  //     throw new BadRequestException('Invalid JSON in body data');
-  //   }
-
-  //   // Generate unique slug
-
-  //   // Upload image
-  //   const fileLink = await uploadFileToSupabase(
-  //     file,
-  //     this.configService,
-  //     'blog',
-  //   );
-
-  //   const documentData ={
-  //     ...parsed,
-  //     fileLink,
-  //     userId: req?.user?.id,
-  //   };
-  //   console.log("🚀 ~ DocumentController ~ create ~ documentData:", documentData)
-
-  //   // const document = await this.documentService.create(documentData);
-  //   // return document
-
-  // }
 
   @UseGuards(AuthGuard)
   @Roles(ROLE.CUSTOMER, ROLE.ADMIN)
@@ -109,28 +71,73 @@ export class DocumentController {
       ),
     );
 
-    const documentData = {
-  name: parsed.name,
-  type: parsed.type,
-  status: DocumentStatus.Open, // required
-  fileUrls: fileLinks,          // required
-  tags: parsed.tags ?? [],      // required
-  description: parsed.description ?? null,
 
-  user: { connect: { id: req.user.id } },
+    const userId = req.user.id;
+    // 🔐 1️⃣ Invoice validate (exist + ownership)
 
-  ...(parsed.appointmentId && { appointment: { connect: { id: parsed.appointmentId } } }),
-  ...(parsed.invoiceId && { invoice: { connect: { id: parsed.invoiceId } } }),
-};
+    if (parsed.invoiceId) {
+      const invoice = await this.prisma.invoice.findFirst({
+        where: {
+          id: parsed.invoiceId,
+          userId,
+        },
+      });
 
+      if (!invoice) {
+        throw new BadRequestException(
+          'Invoice not found or does not belong to this user',
+        );
+      }
+    }
 
-    // console.log(
-    //   '🚀 ~ DocumentController ~ create ~ documentData:',
-    //   documentData,
-    // );
+    // 🔐 2️⃣ Appointment validate (exist + ownership)
+    if (parsed.appointmentId) {
+      const appointment = await this.prisma.appointment.findFirst({
+        where: {
+          id: parsed.appointmentId,
+          userId,
+        },
+      });
 
-    // return this.
-    return this.documentService.create(documentData);
+      if (!appointment) {
+        throw new BadRequestException(
+          'Appointment not found or does not belong to this user',
+        );
+      }
+    }
+
+    // 🧱 3️⃣ Base document data
+    const documentData: any = {
+      name: parsed.name,
+      type: parsed.type,
+      status: DocumentStatus.Open,
+      fileUrls: fileLinks,
+      tags: parsed.tags ?? [],
+      description: parsed.description ?? null,
+
+      user: {
+        connect: { id: req.user.id },
+      },
+    };
+
+    // 🔗 4️⃣ Optional relations
+    if (parsed.invoiceId) {
+      documentData.invoice = {
+        connect: { id: parsed.invoiceId },
+      };
+    }
+
+    if (parsed.appointmentId) {
+      documentData.appointment = {
+        connect: { id: parsed.appointmentId },
+      };
+    }
+
+    // 💾 5️⃣ Create document
+    const document = await this.prisma.document.create({
+      data: documentData,
+    });
+
+    return document;
   }
- 
 }
