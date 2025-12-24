@@ -25,9 +25,7 @@ import { Roles } from 'src/common/decorator/rolesDecorator';
 import { AuthGuard } from 'src/common/guards/auth/auth.guard';
 import { ROLE } from 'src/user/entities/role.entity';
 import { DocumentService } from './document.service';
-import { CreateDocumentDto } from './dto/create-document.dto';
-import { GetDocumentsQueryDto } from './dto/get-documents-query.dto';
-import { UpdateDocumentDto } from './dto/update-document.dto';
+
 import { uploadFileToSupabase } from 'src/utils/common/uploadFileToSupabase';
 import { ConfigService } from '@nestjs/config';
 
