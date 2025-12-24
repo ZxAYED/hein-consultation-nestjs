@@ -23,6 +23,10 @@ export class UpdateInvoiceDto {
 
   @IsOptional()
   @IsString()
+  issuedBy?: string;
+
+  @IsOptional()
+  @IsString()
   issuedAt?: string;
 
   @IsOptional()

@@ -134,6 +134,7 @@ model Invoice {
   amount      Float
   status      InvoiceStatus
   paymentType InvoicePaymentType
+  issuedBy    String
   issuedAt    DateTime
   dueDate     DateTime
 

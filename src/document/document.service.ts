@@ -158,7 +158,11 @@ export class DocumentService {
     return sendResponse('Documents retrieved successfully', { data, meta });
   }
 
-  async update(id: string, dto: UpdateDocumentDto) {
+  async update(
+    id: string,
+    dto: UpdateDocumentDto,
+    actor: Pick<User, 'id' | 'role'>,
+  ) {
     const hasUpdates = Object.values(dto).some((value) => value !== undefined);
     if (!hasUpdates) {
       throw new BadRequestException('No update fields provided');
@@ -174,19 +178,27 @@ export class DocumentService {
         throw new NotFoundException('Document not found');
       }
 
+      const isAdmin = actor.role === UserRole.ADMIN;
+      if (!isAdmin && document.userId !== actor.id) {
+        throw new ForbiddenException('Access denied');
+      }
+
       const appointmentId = await this.resolveAppointmentId(dto.appointmentId);
-      const invoiceId = await this.resolveInvoiceId(dto.invoiceId);
+      const invoiceRef = dto.invoiceId ?? dto.invoiceNo;
+      const invoiceId = await this.resolveInvoiceId(invoiceRef);
 
       const updated = await this.prisma.document.update({
         where: { id: document.id },
         data: {
-          appointmentId: appointmentId,
-          invoiceId: invoiceId,
-          name: dto.name,
-          type: dto.type,
-          status: dto.status,
-          tags: dto.tags,
-          description: dto.description,
+          appointmentId: appointmentId ?? undefined,
+          invoiceId: invoiceId ?? undefined,
+          name: dto.name ?? undefined,
+          type: dto.type ?? undefined,
+          status: dto.status ?? undefined,
+          format: dto.format ?? undefined,
+          size: dto.size ?? undefined,
+          tags: dto.tags ?? undefined,
+          description: dto.description ?? undefined,
         },
       });
 
@@ -204,7 +216,7 @@ export class DocumentService {
     }
   }
 
-  async remove(id: string) {
+  async remove(id: string, actor: Pick<User, 'id' | 'role'>) {
     try {
       const document = await this.prisma.document.findUnique({
         where: { id },
@@ -213,6 +225,11 @@ export class DocumentService {
 
       if (!document) {
         throw new NotFoundException('Document not found');
+      }
+
+      const isAdmin = actor.role === UserRole.ADMIN;
+      if (!isAdmin && document.userId !== actor.id) {
+        throw new ForbiddenException('Access denied');
       }
 
       await this.cleanupUploadedFiles(document.fileUrls ?? []);
@@ -238,10 +255,8 @@ export class DocumentService {
       return undefined;
     }
 
-    const appointment = await this.prisma.appointment.findFirst({
-      where: {
-        OR: [{ id: reference }, { appointmentNo: reference }],
-      },
+    const appointment = await this.prisma.appointment.findUnique({
+      where: { id: reference },
       select: { id: true },
     });
 

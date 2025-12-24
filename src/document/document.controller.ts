@@ -24,7 +24,6 @@ import { Roles } from 'src/common/decorator/rolesDecorator';
 import { AuthGuard } from 'src/common/guards/auth/auth.guard';
 import { ROLE } from 'src/user/entities/role.entity';
 import { uploadFileToSupabase } from 'src/utils/common/uploadFileToSupabase';
-import { PrismaService } from './../prisma/prisma.service';
 import { DocumentService } from './document.service';
 import { CreateDocumentDto } from './dto/create-document.dto';
 import { GetDocumentsQueryDto } from './dto/get-documents-query.dto';
@@ -35,7 +34,6 @@ export class DocumentController {
   constructor(
     private readonly documentService: DocumentService,
     private configService: ConfigService,
-    private readonly prisma: PrismaService,
   ) {}
 
   @UseGuards(AuthGuard)
@@ -120,15 +118,22 @@ export class DocumentController {
   @UseGuards(AuthGuard)
   @Roles(ROLE.CUSTOMER, ROLE.ADMIN)
   @Patch(':id')
-  async update(@Param('id') id: string, @Body() dto: UpdateDocumentDto) {
-    return this.documentService.update(id, dto);
+  async update(
+    @Param('id') id: string,
+    @Body() dto: UpdateDocumentDto,
+    @Req() req: Request & { user: { id: string; role: UserRole } },
+  ) {
+    return this.documentService.update(id, dto, req.user);
   }
 
   @UseGuards(AuthGuard)
   @Roles(ROLE.CUSTOMER, ROLE.ADMIN)
   @Delete(':id')
-  async remove(@Param('id') id: string) {
-    return this.documentService.remove(id);
+  async remove(
+    @Param('id') id: string,
+    @Req() req: Request & { user: { id: string; role: UserRole } },
+  ) {
+    return this.documentService.remove(id, req.user);
   }
 
   private resolveFormat(files: Express.Multer.File[]) {
