@@ -11,6 +11,7 @@ import {
   Param,
   Patch,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { BlogService } from './blog.service';
 import { ConfigService } from '@nestjs/config';
@@ -69,16 +70,28 @@ export class BlogController {
     return await this.blogService.create(blogData);
   }
 
+  @UseGuards(AuthGuard)
+  @Roles(ROLE.ADMIN)
+  @Get('myself-blogs')
+  getMyselfBlogs(
+    @Req() req: Request & { user: any },
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+  ) {
+    return this.blogService.getMyselfBlogs(req?.user?.id, page, limit);
+  }
+
+
   @Get()
-  findAll() {
-    return this.blogService.findAll();
+  findAll(@Query('page') page?: number, @Query('limit') limit?: number) {
+    return this.blogService.findAll(page, limit);
   }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.blogService.findOne(id);
   }
-
+  
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateBlogDto: any) {
     return this.blogService.update(id, updateBlogDto);
