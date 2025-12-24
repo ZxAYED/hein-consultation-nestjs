@@ -466,6 +466,16 @@ export class UserService {
     return sendResponse('User Deleted Successfully');
   }
 
+  async deleteMyselfAccount(id: string) {
+    await this.prisma.user.update({
+      where: { id },
+      data: {
+        isDeleted: true,
+      },
+    });
+    return sendResponse('Your Account Deleted Successfully');
+  }
+
   async changeRole(id: string, role: UserRole) {
     await this.prisma.user.update({
       where: { id },
