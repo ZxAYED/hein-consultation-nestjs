@@ -151,8 +151,8 @@ export class BlogController {
   }
 
   @Get()
-  findAll(@Query('page') page?: number, @Query('limit') limit?: number) {
-    return this.blogService.findAll(page, limit);
+  findAll(@Query('page') page?: number, @Query('limit') limit?: number, @Query('searchTerm') searchTerm?: string) {
+    return this.blogService.findAll(page, limit, searchTerm);
   }
 
   @Get(':slug')

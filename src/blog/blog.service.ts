@@ -40,26 +40,37 @@ export class BlogService {
     }
   }
 
-  async findAll(page?: number, limit?: number) {
-    try {
-      const where: any = {};
+  async findAll(page?: number, limit?: number, searchTerm?: string) {
+  try {
+    // Where clause
+    const where: any = {};
 
-      const totalItems = await this.prisma.blog.count({ where });
-
-      const { skip, take, meta } = getPagination(page, limit, totalItems);
-
-      const data = await this.prisma.blog.findMany({
-        where,
-        skip,
-        take,
-        orderBy: { createdAt: 'desc' },
-      });
-
-      return sendResponse('Blogs fetched successfully', { data, meta });
-    } catch (error) {
-      throw new BadRequestException(error);
+    if (searchTerm) {
+      where.OR = [
+        { title: { contains: searchTerm, mode: 'insensitive' } },
+        { excerpt: { contains: searchTerm, mode: 'insensitive' } },
+      ];
     }
+
+    // Total count
+    const totalItems = await this.prisma.blog.count({ where });
+
+    // Pagination
+    const { skip, take, meta } = getPagination(page, limit, totalItems);
+
+    // Fetch data
+    const data = await this.prisma.blog.findMany({
+      where,
+      skip,
+      take,
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return sendResponse('Blogs fetched successfully', { data, meta });
+  } catch (error) {
+    throw new BadRequestException(error);
   }
+}
 
   async getMyselfBlogs(id: string, page?: number, limit?: number) {
     try {
