@@ -24,6 +24,7 @@ import {
   ServiceNames,
 } from './dto/create-appointment.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
+import { getPagination } from 'src/common/utils/pagination';
 
 type AppointmentAttachment = {
   fileName: string;
@@ -299,38 +300,61 @@ export class AppointmentService {
   }
 
   async list(
-    query: { page?: number; limit?: number },
+    query: { page?: number; limit?: number; serviceName?: string , status?: string, meetingType?: string, slotId?: string, appointmentNo?: string, userId?: string },
     actor: Pick<User, 'id' | 'role'>,
   ) {
+    console.log('🚀 ~ AppointmentService ~ list ~ query:', query);
+
     const page = query.page ?? 1;
     const limit = query.limit ?? 10;
-    const skip = (page - 1) * limit;
     const isAdmin = actor.role === UserRole.ADMIN;
 
     const where: Prisma.AppointmentWhereInput = {};
+
     if (!isAdmin) {
       where.userId = actor.id;
     }
 
-    const [total, data] = await this.prisma.$transaction([
-      this.prisma.appointment.count({ where }),
-      this.prisma.appointment.findMany({
-        where,
-        orderBy: { scheduledAt: 'desc' },
-        skip,
-        take: limit,
-        include: {
-          slot: {
-            select: { startTime: true, endTime: true, status: true },
-          },
-        },
-      }),
-    ]);
+    if (query.serviceName) {
+      where.serviceName = query.serviceName;
+    }
 
-    return sendResponse('Appointments retrieved successfully', {
-      data,
-      meta: { page, limit, total, totalPages: Math.ceil(total / limit) },
+    if (query.status) {
+      where.status = query.status as AppointmentStatus;
+    }
+    if (query.meetingType) {
+      where.meetingType = query.meetingType as MeetingType;
+    }
+    if (query.slotId) {
+      where.slotId = query.slotId;
+    }
+    if (query.appointmentNo) {
+      where.appointmentNo = query.appointmentNo;
+    }
+    if (query.userId) {
+      where.userId = query.userId;
+    }
+
+    // মোট অ্যাপয়েন্টমেন্টের সংখ্যা
+    const totalItems = await this.prisma.appointment.count({ where });
+
+    // Pagination calculate
+    const { skip, take, meta } = getPagination(page, limit, totalItems);
+
+    // ডেটা fetch
+    const data = await this.prisma.appointment.findMany({
+      where,
+      orderBy: { scheduledAt: 'desc' },
+      skip,
+      take,
+      include: {
+        slot: {
+          select: { startTime: true, endTime: true, status: true },
+        },
+      },
     });
+
+    return sendResponse('Appointments retrieved successfully', { data, meta });
   }
 
   async listAll(actor: Pick<User, 'id' | 'role'>) {
