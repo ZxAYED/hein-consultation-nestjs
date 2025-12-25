@@ -68,6 +68,7 @@ export class BlogService {
         skip,
         take,
         orderBy: { createdAt: 'desc' },
+        include: { admin: true },
       });
 
       return sendResponse('Blogs fetched successfully', { data, meta });
