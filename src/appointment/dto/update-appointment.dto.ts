@@ -20,3 +20,5 @@ export class UpdateAppointmentDto {
   @IsString()
   note?: string;
 }
+
+

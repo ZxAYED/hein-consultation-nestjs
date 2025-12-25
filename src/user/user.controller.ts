@@ -21,7 +21,7 @@ import multer from 'multer';
 import { Roles } from 'src/common/decorator/rolesDecorator';
 import { AuthGuard } from 'src/common/guards/auth/auth.guard';
 import { uploadFileToSupabase } from 'src/utils/common/uploadFileToSupabase';
-import { CreateUserDto } from './dto/create-user.dto';
+import { CreateUserByAdmin, CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ROLE } from './entities/role.entity';
 import { UserService } from './user.service';
@@ -77,6 +77,12 @@ export class UserController {
     }
 
     return this.userService.create(userRegistrationData as CreateUserDto);
+  }
+  @UseGuards(AuthGuard)
+  @Roles(ROLE.ADMIN)
+  @Post('/create-user-without-otp')
+  createUserWithoutOtp(@Body() createUserByAdmin: any) {
+    return this.userService.createUserWithoutOtp(createUserByAdmin);
   }
 
   @Post('/resend-register-otp')

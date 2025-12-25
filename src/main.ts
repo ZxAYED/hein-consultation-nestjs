@@ -22,9 +22,11 @@ async function bootstrap() {
       'http://localhost:5174',
       'http://localhost:5175',
       'http://localhost:5176',
+      'https://marcus-hein-alpha.vercel.app',
       '*',
     ],
   });
+  
   await app.listen(process.env.PORT || 3000);
 }
 void bootstrap();

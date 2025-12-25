@@ -21,3 +21,13 @@ export class CreateUserDto {
   isBlocked?: boolean;
   isDeleted?: boolean;
 }
+
+export class CreateUserByAdmin {
+  firstName: string;
+  lastName: string;
+  email: string;
+  role: string;
+  companyName: string;
+  phoneNumber: string;
+  password: string;
+}

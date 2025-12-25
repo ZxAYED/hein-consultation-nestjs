@@ -27,6 +27,7 @@ import { Blog, BlogStatus, Prisma } from '@prisma/client';
 import { validateOrReject } from 'class-validator';
 import { plainToInstance } from 'class-transformer';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { UpdateBlogDto } from './dto/update-blog.dto';
 
 @Controller('blog')
 export class BlogController {
@@ -151,7 +152,11 @@ export class BlogController {
   }
 
   @Get()
-  findAll(@Query('page') page?: number, @Query('limit') limit?: number, @Query('searchTerm') searchTerm?: string) {
+  findAll(
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+    @Query('searchTerm') searchTerm?: string,
+  ) {
     return this.blogService.findAll(page, limit, searchTerm);
   }
 
@@ -160,9 +165,84 @@ export class BlogController {
     return this.blogService.findBySlug2(slug);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateBlogDto: any) {
-    return this.blogService.update(id, updateBlogDto);
+  // @Patch(':id')
+  // update(@Param('id') id: string, @Body() updateBlogDto: any) {
+  //   return this.blogService.update(id, updateBlogDto);
+  // }
+
+  @UseGuards(AuthGuard)
+  @Roles(ROLE.ADMIN)
+  @Patch('/update-blog/:id')
+  @UseInterceptors(FileInterceptor('file', { storage: multer.memoryStorage() }))
+  async update(
+    @Param('id') id: string,
+    @Req() req: Request & { user: any },
+    @Body() body: any,
+    @UploadedFile() file?: Express.Multer.File,
+  ) {
+    if (!body?.data && !file) {
+      throw new BadRequestException(
+        'At least one of data or file must be provided',
+      );
+    }
+
+    let dtoInstance: UpdateBlogDto | null = null;
+
+    // ✅ Handle data if exists
+    if (body?.data) {
+      let parsed: any;
+      try {
+        parsed = JSON.parse(body.data);
+      } catch {
+        throw new BadRequestException('Invalid JSON in body data');
+      }
+
+      dtoInstance = plainToInstance(UpdateBlogDto, parsed);
+
+      try {
+        await validateOrReject(dtoInstance, {
+          validationError: { target: false },
+        });
+      } catch (errors) {
+        const formattedErrors = errors
+          .map((err: any) => Object.values(err.constraints))
+          .flat();
+        throw new BadRequestException(formattedErrors);
+      }
+    }
+
+    const adminId = req?.user?.id;
+
+    const updateData: any = {};
+
+    // ✅ Update fields only if they exist
+    if (dtoInstance) {
+      if (dtoInstance.title) {
+        updateData.title = dtoInstance.title;
+        updateData.slug = await generateUniqueSlug(
+          dtoInstance.title,
+          this.blogService,
+        );
+      }
+
+      if (dtoInstance.excerpt) updateData.excerpt = dtoInstance.excerpt;
+      if (dtoInstance.content) updateData.content = dtoInstance.content;
+      if (dtoInstance.categories)
+        updateData.categories = dtoInstance.categories;
+      if (dtoInstance.tags) updateData.tags = dtoInstance.tags;
+    }
+
+    // ✅ Update file if exists
+    if (file) {
+      const imageLink = await uploadFileToSupabase(
+        file,
+        this.configService,
+        'blog',
+      );
+      updateData.image = imageLink;
+    }
+
+    return await this.blogService.update(id, updateData);
   }
 
   @Delete(':slug')

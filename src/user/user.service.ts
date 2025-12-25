@@ -7,14 +7,14 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { UserRole } from '@prisma/client';
+import { User, UserRole } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { getPagination } from 'src/common/utils/pagination';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { generateOtpEmailTemplate } from 'src/utils/generateOtpEmailTemplate';
 import { sendResponse } from 'src/utils/sendResponse';
 import { sendVerificationEmail } from 'src/utils/sendVerificationEmail';
-import { CreateUserDto } from './dto/create-user.dto';
+import { CreateUserByAdmin, CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 @Injectable()
 export class UserService {
@@ -70,6 +70,36 @@ export class UserService {
 
     return sendResponse(
       'User Registration Successfully, Check your email to verify your account, You have 10 minutes to verify your login. If you did not receive the email, please check your spam folder.',
+    );
+  }
+  async createUserWithoutOtp(createUserByAdmin: any) {
+  // console.log("🚀 ~ UserService ~ createUserWithoutOtp ~ createUserByAdmin:", createUserByAdmin)
+
+    
+
+    const isUserAlreadyExist = await this.prisma.user.findUnique({
+      where: { email: createUserByAdmin.email },
+    });
+    if (isUserAlreadyExist) {
+      throw new ConflictException('User already exist');
+    }
+
+    const hashPassword = await bcrypt.hash(createUserByAdmin.password, 10);
+
+    const userRegistrationData = {
+      ...createUserByAdmin,
+      role:createUserByAdmin.role as string,
+      isVerified: true,
+      password: hashPassword,
+    };
+
+    const result = await this.prisma.user.create({
+      data: userRegistrationData,
+    });
+
+    return sendResponse(
+      'User Registration Successfully, User can login now.',
+      result,
     );
   }
 
@@ -483,7 +513,9 @@ export class UserService {
   }
 
   async findAll(page?: number, limit?: number, isBlocked?: boolean) {
-    const where: any = {};
+    const where: any = {
+      isDeleted:false
+    };
 
     // 🔥 isBlocked filter (dynamic)
     if (isBlocked !== undefined) {
