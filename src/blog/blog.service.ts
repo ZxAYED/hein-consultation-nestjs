@@ -1,4 +1,8 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { Blog } from '@prisma/client';
 import { sendResponse } from 'src/utils/sendResponse';
@@ -41,36 +45,36 @@ export class BlogService {
   }
 
   async findAll(page?: number, limit?: number, searchTerm?: string) {
-  try {
-    // Where clause
-    const where: any = {};
+    try {
+      // Where clause
+      const where: any = {};
 
-    if (searchTerm) {
-      where.OR = [
-        { title: { contains: searchTerm, mode: 'insensitive' } },
-        { excerpt: { contains: searchTerm, mode: 'insensitive' } },
-      ];
+      if (searchTerm) {
+        where.OR = [
+          { title: { contains: searchTerm, mode: 'insensitive' } },
+          { excerpt: { contains: searchTerm, mode: 'insensitive' } },
+        ];
+      }
+
+      // Total count
+      const totalItems = await this.prisma.blog.count({ where });
+
+      // Pagination
+      const { skip, take, meta } = getPagination(page, limit, totalItems);
+
+      // Fetch data
+      const data = await this.prisma.blog.findMany({
+        where,
+        skip,
+        take,
+        orderBy: { createdAt: 'desc' },
+      });
+
+      return sendResponse('Blogs fetched successfully', { data, meta });
+    } catch (error) {
+      throw new BadRequestException(error);
     }
-
-    // Total count
-    const totalItems = await this.prisma.blog.count({ where });
-
-    // Pagination
-    const { skip, take, meta } = getPagination(page, limit, totalItems);
-
-    // Fetch data
-    const data = await this.prisma.blog.findMany({
-      where,
-      skip,
-      take,
-      orderBy: { createdAt: 'desc' },
-    });
-
-    return sendResponse('Blogs fetched successfully', { data, meta });
-  } catch (error) {
-    throw new BadRequestException(error);
   }
-}
 
   async getMyselfBlogs(id: string, page?: number, limit?: number) {
     try {
@@ -107,9 +111,19 @@ export class BlogService {
     }
   }
 
-  async update(id: string, data: any): Promise<Blog> {
+ async update(id: string, data: any) {
     try {
-      return await this.prisma.blog.update({ where: { id }, data });
+      const isBlogExist = await this.prisma.blog.findUnique({
+        where: { id },
+      });
+      if (!isBlogExist) {
+        throw new NotFoundException('Blog not found');
+      }
+      const result = await this.prisma.blog.update({
+        where: { id },
+        data,
+      });
+      return sendResponse('Blog Updated Successfully', result);
     } catch (error) {
       throw new BadRequestException(error);
     }
@@ -117,11 +131,13 @@ export class BlogService {
 
   async remove(slug: string) {
     try {
-      const isBlogExist = await this.prisma.blog.findUnique({ where: { slug } });
+      const isBlogExist = await this.prisma.blog.findUnique({
+        where: { slug },
+      });
       if (!isBlogExist) {
         throw new NotFoundException('Blog not found');
       }
-       await this.prisma.blog.delete({ where: { slug } });
+      await this.prisma.blog.delete({ where: { slug } });
     } catch (error) {
       throw new BadRequestException(error);
     }
