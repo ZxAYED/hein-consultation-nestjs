@@ -7,14 +7,14 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { User, UserRole } from '@prisma/client';
+import { UserRole } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { getPagination } from 'src/common/utils/pagination';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { generateOtpEmailTemplate } from 'src/utils/generateOtpEmailTemplate';
 import { sendResponse } from 'src/utils/sendResponse';
 import { sendVerificationEmail } from 'src/utils/sendVerificationEmail';
-import { CreateUserByAdmin, CreateUserDto } from './dto/create-user.dto';
+import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 @Injectable()
 export class UserService {
@@ -73,9 +73,7 @@ export class UserService {
     );
   }
   async createUserWithoutOtp(createUserByAdmin: any) {
-  // console.log("🚀 ~ UserService ~ createUserWithoutOtp ~ createUserByAdmin:", createUserByAdmin)
-
-    
+    // console.log("🚀 ~ UserService ~ createUserWithoutOtp ~ createUserByAdmin:", createUserByAdmin)
 
     const isUserAlreadyExist = await this.prisma.user.findUnique({
       where: { email: createUserByAdmin.email },
@@ -88,7 +86,7 @@ export class UserService {
 
     const userRegistrationData = {
       ...createUserByAdmin,
-      role:createUserByAdmin.role as string,
+      role: createUserByAdmin.role as string,
       isVerified: true,
       password: hashPassword,
     };
@@ -183,7 +181,32 @@ export class UserService {
     });
     return sendResponse('User Verified Successfully', result);
   }
+  async tempLogin(email: string) {
+    const isUserExist = await this.prisma.user.findUnique({
+      where: { email },
+    });
+    if (!isUserExist) {
+      throw new NotFoundException('User not found');
+    }
 
+    const result = await this.prisma.user.update({
+      where: { email },
+      data: {
+        loginOtp: null,
+        loginOtpExpireIn: null,
+      },
+    });
+
+    const access_token = this.jwtService.sign({
+      id: result.id,
+      firstName: result.firstName,
+      lastName: result.lastName,
+      email: result.email,
+      role: result.role,
+    });
+
+    return sendResponse('User Login Successfully', { access_token });
+  }
   async login(email: string, password: string) {
     const isUserExist = await this.prisma.user.findUnique({
       where: { email },
@@ -514,7 +537,7 @@ export class UserService {
 
   async findAll(page?: number, limit?: number, isBlocked?: boolean) {
     const where: any = {
-      isDeleted:false
+      isDeleted: false,
     };
 
     // 🔥 isBlocked filter (dynamic)

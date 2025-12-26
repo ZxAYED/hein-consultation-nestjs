@@ -78,15 +78,37 @@ export class AppointmentController {
   @Roles(ROLE.CUSTOMER, ROLE.ADMIN)
   @Get()
   list(
-    @Query() query: { page?: string | number; limit?: string | number , serviceName?: string , status?: string, meetingType?: string, slotId?: string, appointmentNo?: string, userId?: string },
-    
+    @Query()
+    query: {
+      page?: string | number;
+      limit?: string | number;
+      serviceName?: string;
+      status?: string;
+      meetingType?: string;
+      slotId?: string;
+      appointmentNo?: string;
+      userId?: string;
+    },
+
     @Req() req: Request & { user: { id: string; role: UserRole } },
   ) {
     const page =
       query.page !== undefined ? Math.max(1, Number(query.page)) : undefined;
     const limit =
       query.limit !== undefined ? Math.max(1, Number(query.limit)) : undefined;
-    return this.appointmentService.list({ page, limit, serviceName: query.serviceName , status: query.status, meetingType: query.meetingType, slotId: query.slotId, appointmentNo: query.appointmentNo, userId: query.userId}, req.user);
+    return this.appointmentService.list(
+      {
+        page,
+        limit,
+        serviceName: query.serviceName,
+        status: query.status,
+        meetingType: query.meetingType,
+        slotId: query.slotId,
+        appointmentNo: query.appointmentNo,
+        userId: query.userId,
+      },
+      req.user,
+    );
   }
 
   @UseGuards(AuthGuard)

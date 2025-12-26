@@ -10,11 +10,14 @@ import { ConfigService } from '@nestjs/config';
 import {
   AppointmentStatus,
   MeetingType,
+  NotificationEvent,
   Prisma,
   SlotStatus,
   User,
   UserRole,
 } from '@prisma/client';
+import { getPagination } from 'src/common/utils/pagination';
+import { EventService } from 'src/event/event.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { deleteFilesFromSupabase } from 'src/utils/common/deleteFilesFromSupabase';
 import { uploadFileToSupabaseWithMeta } from 'src/utils/common/uploadFileToSupabase';
@@ -24,7 +27,6 @@ import {
   ServiceNames,
 } from './dto/create-appointment.dto';
 import { UpdateAppointmentDto } from './dto/update-appointment.dto';
-import { getPagination } from 'src/common/utils/pagination';
 
 type AppointmentAttachment = {
   fileName: string;
@@ -43,6 +45,7 @@ export class AppointmentService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly configService: ConfigService,
+    private readonly eventService: EventService,
   ) {}
 
   async create(dto: CreateAppointmentDto, files: Express.Multer.File[] = []) {
@@ -160,6 +163,15 @@ export class AppointmentService {
         await this.cleanupUploadedFiles(attachments);
         throw error;
       });
+
+    await this.eventService.emitSystemEvent({
+      event: NotificationEvent.APPOINTMENT_CREATED,
+      entityId: result.id,
+      actorId: dto.userId,
+      actorRole: UserRole.CUSTOMER,
+      userId: dto.userId,
+      metadata: { appointmentId: result.id, status: result.status },
+    });
 
     return sendResponse('Appointment created successfully', result);
   }
@@ -300,7 +312,16 @@ export class AppointmentService {
   }
 
   async list(
-    query: { page?: number; limit?: number; serviceName?: string , status?: string, meetingType?: string, slotId?: string, appointmentNo?: string, userId?: string },
+    query: {
+      page?: number;
+      limit?: number;
+      serviceName?: string;
+      status?: string;
+      meetingType?: string;
+      slotId?: string;
+      appointmentNo?: string;
+      userId?: string;
+    },
     actor: Pick<User, 'id' | 'role'>,
   ) {
     console.log('🚀 ~ AppointmentService ~ list ~ query:', query);
@@ -507,6 +528,15 @@ export class AppointmentService {
       return updatedAppointment;
     });
 
+    await this.eventService.emitSystemEvent({
+      event: NotificationEvent.APPOINTMENT_STATUS_CHANGED,
+      entityId: result.id,
+      actorId: actor.id,
+      actorRole: actor.role,
+      userId: result.userId,
+      metadata: { status: result.status },
+    });
+
     return sendResponse('Appointment cancelled successfully', result);
   }
 
@@ -517,7 +547,7 @@ export class AppointmentService {
 
     const appointment = await this.prisma.appointment.findUnique({
       where: { id: appointmentId },
-      select: { id: true, status: true },
+      select: { id: true, status: true, userId: true },
     });
 
     if (!appointment) {
@@ -533,6 +563,15 @@ export class AppointmentService {
     const updated = await this.prisma.appointment.update({
       where: { id: appointment.id },
       data: { status: AppointmentStatus.Completed },
+    });
+
+    await this.eventService.emitSystemEvent({
+      event: NotificationEvent.APPOINTMENT_STATUS_CHANGED,
+      entityId: updated.id,
+      actorId: actor.id,
+      actorRole: actor.role,
+      userId: updated.userId,
+      metadata: { status: updated.status },
     });
 
     return sendResponse('Appointment completed successfully', updated);

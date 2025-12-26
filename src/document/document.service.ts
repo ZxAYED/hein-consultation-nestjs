@@ -5,8 +5,15 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Prisma, User, UserRole } from '@prisma/client';
+import {
+  DocumentStatus,
+  NotificationEvent,
+  Prisma,
+  User,
+  UserRole,
+} from '@prisma/client';
 import { getPagination } from 'src/common/utils/pagination';
+import { EventService } from 'src/event/event.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { deleteFilesFromSupabase } from 'src/utils/common/deleteFilesFromSupabase';
 import { sendResponse } from 'src/utils/sendResponse';
@@ -19,6 +26,7 @@ export class DocumentService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly configService: ConfigService,
+    private readonly eventService: EventService,
   ) {}
 
   async create(
@@ -56,6 +64,15 @@ export class DocumentService {
         },
       });
 
+      await this.eventService.emitSystemEvent({
+        event: NotificationEvent.DOCUMENT_UPLOADED,
+        entityId: created.id,
+        actorId: actor.id,
+        actorRole: UserRole.CUSTOMER,
+        userId: actor.id,
+        metadata: { documentId: created.id, status: created.status },
+      });
+
       return sendResponse('Document created successfully', created);
     } catch (error) {
       console.error('DocumentService.create failed', error);
@@ -69,7 +86,7 @@ export class DocumentService {
 
   // async list(query: GetDocumentsQueryDto, actor: Pick<User, 'id' | 'role'>) {
   //   console.log("🚀 ~ DocumentService ~ list ~ query:", query)
-    
+
   //   const isAdmin = actor.role === UserRole.ADMIN;
   //   const where: Prisma.DocumentWhereInput = {};
 
@@ -163,141 +180,136 @@ export class DocumentService {
   //   return sendResponse('Documents retrieved successfully', { data, meta });
   // }
 
-  async list(
-  query: GetDocumentsQueryDto,
-  actor: Pick<User, 'id' | 'role'>,
-) {
-  // console.log('🚀 ~ DocumentService ~ list ~ query:', query);
+  async list(query: GetDocumentsQueryDto, actor: Pick<User, 'id' | 'role'>) {
+    // console.log('🚀 ~ DocumentService ~ list ~ query:', query);
 
-  const isAdmin = actor.role === UserRole.ADMIN;
+    const isAdmin = actor.role === UserRole.ADMIN;
 
-  const andConditions: Prisma.DocumentWhereInput[] = [];
+    const andConditions: Prisma.DocumentWhereInput[] = [];
 
-  // 🔐 User restriction
-  if (!isAdmin) {
-    andConditions.push({ userId: actor.id });
-  }
+    // 🔐 User restriction
+    if (!isAdmin) {
+      andConditions.push({ userId: actor.id });
+    }
 
-  // 📄 Basic filters
-  if (query.type) {
-    andConditions.push({ type: query.type });
-  }
+    // 📄 Basic filters
+    if (query.type) {
+      andConditions.push({ type: query.type });
+    }
 
-  if (query.status) {
-    andConditions.push({ status: query.status });
-  }
+    if (query.status) {
+      andConditions.push({ status: query.status });
+    }
 
-  if (query.appointmentId) {
-    andConditions.push({ appointmentId: query.appointmentId });
-  }
+    if (query.appointmentId) {
+      andConditions.push({ appointmentId: query.appointmentId });
+    }
 
-  if (query.invoiceId) {
-    andConditions.push({ invoiceId: query.invoiceId });
-  }
+    if (query.invoiceId) {
+      andConditions.push({ invoiceId: query.invoiceId });
+    }
 
-  // 🔗 Relation exact match filters
-  if (query.appointmentNo) {
-    andConditions.push({
-      appointment: {
-        appointmentNo: query.appointmentNo,
-      },
-    });
-  }
+    // 🔗 Relation exact match filters
+    if (query.appointmentNo) {
+      andConditions.push({
+        appointment: {
+          appointmentNo: query.appointmentNo,
+        },
+      });
+    }
 
-  if (query.invoiceNo) {
-    andConditions.push({
-      invoice: {
-        invoiceNo: query.invoiceNo,
-      },
-    });
-  }
+    if (query.invoiceNo) {
+      andConditions.push({
+        invoice: {
+          invoiceNo: query.invoiceNo,
+        },
+      });
+    }
 
-  // 🏷️ Tags filter
-  const tagFilters = new Set<string>();
+    // 🏷️ Tags filter
+    const tagFilters = new Set<string>();
 
-  if (query.tag) {
-    tagFilters.add(query.tag);
-  }
+    if (query.tag) {
+      tagFilters.add(query.tag);
+    }
 
-  if (Array.isArray(query.tags)) {
-    query.tags.forEach((tag) => tagFilters.add(tag));
-  }
+    if (Array.isArray(query.tags)) {
+      query.tags.forEach((tag) => tagFilters.add(tag));
+    }
 
-  if (tagFilters.size) {
-    andConditions.push({
-      tags: {
-        hasSome: Array.from(tagFilters),
-      },
-    });
-  }
+    if (tagFilters.size) {
+      andConditions.push({
+        tags: {
+          hasSome: Array.from(tagFilters),
+        },
+      });
+    }
 
-  // 🔍 Search (OR inside AND)
-  if (query.search?.trim()) {
-    const search = query.search.trim();
+    // 🔍 Search (OR inside AND)
+    if (query.search?.trim()) {
+      const search = query.search.trim();
 
-    andConditions.push({
-      OR: [
-        { name: { contains: search, mode: 'insensitive' } },
-        { description: { contains: search, mode: 'insensitive' } },
-      ],
-    });
-  }
+      andConditions.push({
+        OR: [
+          { name: { contains: search, mode: 'insensitive' } },
+          { description: { contains: search, mode: 'insensitive' } },
+        ],
+      });
+    }
 
-  // 🧠 Final where condition
-  const where: Prisma.DocumentWhereInput =
-    andConditions.length > 0 ? { AND: andConditions } : {};
+    // 🧠 Final where condition
+    const where: Prisma.DocumentWhereInput =
+      andConditions.length > 0 ? { AND: andConditions } : {};
 
-  // 📊 Count
-  const totalItems = await this.prisma.document.count({ where });
+    // 📊 Count
+    const totalItems = await this.prisma.document.count({ where });
 
-  const { skip, take, meta } = getPagination(
-    query.page,
-    query.limit,
-    totalItems,
-  );
+    const { skip, take, meta } = getPagination(
+      query.page,
+      query.limit,
+      totalItems,
+    );
 
-  // 📂 Data fetch
-  const data = await this.prisma.document.findMany({
-    where,
-    select: {
-      id: true,
-      name: true,
-      type: true,
-      status: true,
-      format: true,
-      size: true,
-      fileUrls: true,
-      tags: true,
-      description: true,
-      createdAt: true,
-      updatedAt: true,
-      appointment: {
-        select: {
-          appointmentNo: true,
-          serviceName: true,
-          id: true,
+    // 📂 Data fetch
+    const data = await this.prisma.document.findMany({
+      where,
+      select: {
+        id: true,
+        name: true,
+        type: true,
+        status: true,
+        format: true,
+        size: true,
+        fileUrls: true,
+        tags: true,
+        description: true,
+        createdAt: true,
+        updatedAt: true,
+        appointment: {
+          select: {
+            appointmentNo: true,
+            serviceName: true,
+            id: true,
+          },
+        },
+        invoice: {
+          select: {
+            invoiceNo: true,
+            amount: true,
+            id: true,
+          },
         },
       },
-      invoice: {
-        select: {
-          invoiceNo: true,
-          amount: true,
-          id: true,
-        },
-      },
-    },
-    orderBy: { createdAt: 'desc' },
-    skip,
-    take,
-  });
+      orderBy: { createdAt: 'desc' },
+      skip,
+      take,
+    });
 
-  return sendResponse('Documents retrieved successfully', {
-    data,
-    meta,
-  });
-}
-
-
+    return sendResponse('Documents retrieved successfully', {
+      data,
+      meta,
+    });
+  }
 
   async update(
     id: string,
@@ -312,7 +324,7 @@ export class DocumentService {
     try {
       const document = await this.prisma.document.findUnique({
         where: { id },
-        select: { id: true, userId: true },
+        select: { id: true, userId: true, status: true },
       });
 
       if (!document) {
@@ -342,6 +354,20 @@ export class DocumentService {
           description: dto.description ?? undefined,
         },
       });
+
+      const shouldEmitApproved =
+        dto.status === DocumentStatus.Approved &&
+        document.status !== DocumentStatus.Approved;
+      if (shouldEmitApproved) {
+        await this.eventService.emitSystemEvent({
+          event: NotificationEvent.DOCUMENT_APPROVED,
+          entityId: document.id,
+          actorId: actor.id,
+          actorRole: actor.role,
+          userId: document.userId,
+          metadata: { status: dto.status },
+        });
+      }
 
       return sendResponse('Document updated successfully', updated);
     } catch (error) {

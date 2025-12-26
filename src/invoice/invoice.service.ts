@@ -5,8 +5,16 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { AppointmentStatus, Prisma, User, UserRole } from '@prisma/client';
+import {
+  AppointmentStatus,
+  InvoiceStatus,
+  NotificationEvent,
+  Prisma,
+  User,
+  UserRole,
+} from '@prisma/client';
 import { getPagination } from 'src/common/utils/pagination';
+import { EventService } from 'src/event/event.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { sendResponse } from 'src/utils/sendResponse';
 import { CreateInvoiceDto } from './dto/create-invoice.dto';
@@ -15,7 +23,10 @@ import { UpdateInvoiceDto } from './dto/update-invoice.dto';
 
 @Injectable()
 export class InvoiceService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly eventService: EventService,
+  ) {}
 
   async create(dto: CreateInvoiceDto, actor: Pick<User, 'id' | 'role'>) {
     if (actor.role !== UserRole.ADMIN) {
@@ -74,6 +85,15 @@ export class InvoiceService {
       }
 
       return invoice;
+    });
+
+    await this.eventService.emitSystemEvent({
+      event: NotificationEvent.INVOICE_CREATED,
+      entityId: created.id,
+      actorId: actor.id,
+      actorRole: actor.role,
+      userId: created.userId,
+      metadata: { invoiceId: created.id, status: created.status },
     });
 
     return sendResponse('Invoice created successfully', created);
@@ -199,7 +219,7 @@ export class InvoiceService {
 
     const invoice = await this.prisma.invoice.findUnique({
       where: { id },
-      select: { id: true },
+      select: { id: true, status: true, userId: true },
     });
 
     if (!invoice) {
@@ -225,6 +245,20 @@ export class InvoiceService {
         dueDate,
       },
     });
+
+    const shouldEmitPaid =
+      dto.status === InvoiceStatus.Paid &&
+      invoice.status !== InvoiceStatus.Paid;
+    if (shouldEmitPaid) {
+      await this.eventService.emitSystemEvent({
+        event: NotificationEvent.INVOICE_PAID,
+        entityId: updated.id,
+        actorId: actor.id,
+        actorRole: actor.role,
+        userId: updated.userId,
+        metadata: { status: updated.status },
+      });
+    }
 
     return sendResponse('Invoice updated successfully', updated);
   }

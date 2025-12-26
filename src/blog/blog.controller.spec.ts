@@ -1,6 +1,7 @@
 import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AuthGuard } from 'src/common/guards/auth/auth.guard';
+import { EventService } from 'src/event/event.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { BlogController } from './blog.controller';
 import { BlogService } from './blog.service';
@@ -20,6 +21,10 @@ describe('BlogController', () => {
         {
           provide: PrismaService,
           useValue: { blog: {} },
+        },
+        {
+          provide: EventService,
+          useValue: { emitSystemEvent: jest.fn() },
         },
       ],
     })

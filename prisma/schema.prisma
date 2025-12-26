@@ -40,6 +40,7 @@ model User {
   invoices     Invoice[]
   appointments Appointment[]
   blogs        Blog[]
+  notifications Notification[]
 }
 
 model ScheduleSlot {
@@ -166,6 +167,40 @@ model Blog {
   updatedAt   DateTime       @updatedAt
 
   admin User @relation(fields: [adminId], references: [id])
+}
+
+model Activity {
+  id        String            @id @default(uuid())
+  event     NotificationEvent
+  entityId  String
+  actorId   String
+  userId    String?
+  metadata  Json?
+  createdAt DateTime          @default(now())
+}
+
+model Notification {
+  id        String            @id @default(uuid())
+  userId    String
+  event     NotificationEvent
+  title     String
+  message   String
+  isRead    Boolean           @default(false)
+  metadata  Json?
+  createdAt DateTime          @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+enum NotificationEvent {
+  DOCUMENT_UPLOADED
+  DOCUMENT_APPROVED
+  APPOINTMENT_CREATED
+  APPOINTMENT_STATUS_CHANGED
+  INVOICE_CREATED
+  INVOICE_PAID
+  BLOG_CREATED
+  ADMIN_MANUAL
 }
 
 enum BlogCategory {

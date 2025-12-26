@@ -3,6 +3,7 @@ import { BlogService } from './blog.service';
 import { BlogController } from './blog.controller';
 import { ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
+import { EventModule } from 'src/event/event.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { JwtModule } from '@nestjs/jwt';
         signOptions: { expiresIn: '60d' },
       }),
     }),
+    EventModule,
   ],
   controllers: [BlogController],
   providers: [BlogService],
