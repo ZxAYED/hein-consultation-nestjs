@@ -7,7 +7,6 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { Blog } from '@prisma/client';
 import { sendResponse } from 'src/utils/sendResponse';
 import { getPagination } from 'src/common/utils/pagination';
-import { CreateBlogDto } from './dto/create-blog.dto';
 
 @Injectable()
 export class BlogService {

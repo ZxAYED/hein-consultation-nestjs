@@ -10,6 +10,7 @@ import { ScheduleModule } from './schedule/schedule.module';
 import { UserModule } from './user/user.module';
 
 import { BlogModule } from './blog/blog.module';
+import { ServiceModule } from './service/service.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { BlogModule } from './blog/blog.module';
     BlogModule,
     DocumentModule,
     InvoiceModule,
+    ServiceModule,
   ],
   controllers: [AppController],
   providers: [AppService],

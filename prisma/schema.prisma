@@ -30,16 +30,20 @@ model User {
   loginOtpExpireIn          DateTime?
   resetPasswordOtp          String?
   resetPasswordOtpExpireIn  DateTime?
-  isVerified                Boolean   @default(false)
-  isBlocked                 Boolean   @default(false)
-  isDeleted                 Boolean   @default(false)
-  createdAt                 DateTime  @default(now())
-  updatedAt                 DateTime  @updatedAt
+  lastPasswordChangeTime    DateTime?
+  loginTime             DateTime?
+  registrationTime          DateTime?
+  isVerified Boolean  @default(false)
+  isBlocked  Boolean  @default(false)
+  isDeleted  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   documents    Document[]
   invoices     Invoice[]
   appointments Appointment[]
   blogs        Blog[]
+  services     Service[]
 }
 
 model ScheduleSlot {
@@ -86,6 +90,7 @@ model Appointment {
   slot      ScheduleSlot @relation(fields: [slotId], references: [id])
   documents Document[]
   invoice   Invoice?
+
   @@index([appointmentNo])
 }
 
@@ -107,23 +112,11 @@ model Document {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user        User            @relation(fields: [userId], references: [id])
-  appointment Appointment?    @relation(fields: [appointmentId], references: [id])
-  invoice     Invoice?        @relation(fields: [invoiceId], references: [id])
+  user        User         @relation(fields: [userId], references: [id])
+  appointment Appointment? @relation(fields: [appointmentId], references: [id])
+  invoice     Invoice?     @relation(fields: [invoiceId], references: [id])
   // audits      DocumentAudit[]
 }
-
-// model DocumentAudit {
-//   id            String              @id @default(uuid())
-//   documentId    String
-//   action        DocumentAuditAction
-//   performedById String
-//   metadata      Json?
-//   createdAt     DateTime            @default(now())
-
-//   document    Document @relation(fields: [documentId], references: [id])
-//   performedBy User     @relation(fields: [performedById], references: [id])
-// }
 
 model Invoice {
   id            String  @id @default(uuid())
@@ -166,6 +159,30 @@ model Blog {
   updatedAt   DateTime       @updatedAt
 
   admin User @relation(fields: [adminId], references: [id])
+}
+
+model Service {
+  id          String          @id @default(uuid())
+  name        String
+  category    ServiceCategory
+  adminId     String
+  slug        String          @unique
+  description String
+  status      ServiceStatus
+  image       String
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  admin       User            @relation(fields: [adminId], references: [id])
+}
+
+enum ServiceCategory {
+  Consulting
+  Training
+}
+
+enum ServiceStatus {
+  Active
+  Inactive
 }
 
 enum BlogCategory {
