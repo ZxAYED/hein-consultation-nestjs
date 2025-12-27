@@ -1,4 +1,4 @@
-# Marcus Backend (NestJS + Prisma)
+# Hein-Consultaion Backend (NestJS + Prisma)
 
 An end-to-end backend for a service business platform: customers book appointments, upload documents, receive invoices, and get real-time notifications—while admins manage services, schedules, content, and operations.
 
