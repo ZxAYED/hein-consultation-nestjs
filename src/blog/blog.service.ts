@@ -1,20 +1,32 @@
 import {
-  Injectable,
   BadRequestException,
+  Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
-import { Blog } from '@prisma/client';
-import { sendResponse } from 'src/utils/sendResponse';
+import { Blog, NotificationEvent, UserRole } from '@prisma/client';
 import { getPagination } from 'src/common/utils/pagination';
+import { EventService } from 'src/event/event.service';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { sendResponse } from 'src/utils/sendResponse';
 
 @Injectable()
 export class BlogService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly eventService: EventService,
+  ) {}
 
   async create(data: Blog) {
     try {
       const result = await this.prisma.blog.create({ data });
+      await this.eventService.emitSystemEvent({
+        event: NotificationEvent.BLOG_CREATED,
+        entityId: result.id,
+        actorId: result.adminId,
+        actorRole: UserRole.ADMIN,
+        broadcast: true,
+        metadata: { blogId: result.id, title: result.title },
+      });
       return sendResponse('Blog Created Successfully', result);
     } catch (error) {
       throw new BadRequestException(error);
@@ -111,7 +123,7 @@ export class BlogService {
     }
   }
 
- async update(id: string, data: any) {
+  async update(id: string, data: any) {
     try {
       const isBlogExist = await this.prisma.blog.findUnique({
         where: { id },

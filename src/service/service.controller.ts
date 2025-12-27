@@ -12,7 +12,6 @@ import {
   Patch,
   Delete,
   Query,
-  InternalServerErrorException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { AuthGuard } from 'src/common/guards/auth/auth.guard';
@@ -20,14 +19,10 @@ import { Roles } from 'src/common/decorator/rolesDecorator';
 import { ROLE } from 'src/user/entities/role.entity';
 import { FileInterceptor } from '@nestjs/platform-express';
 import multer from 'multer';
-import {
-  generateServiceSlug,
-  generateUniqueSlug,
-} from 'src/common/utils/generateUniqueSlug';
+import { generateServiceSlug } from 'src/common/utils/generateUniqueSlug';
 import { uploadFileToSupabase } from 'src/utils/common/uploadFileToSupabase';
 import { ServiceStatus } from '@prisma/client';
 
-import { PrismaService } from 'src/prisma/prisma.service';
 import { ServiceService } from './service.service';
 
 import { sendResponse } from 'src/utils/sendResponse';
@@ -41,7 +36,6 @@ export class ServiceController {
   constructor(
     private readonly serviceService: ServiceService,
     private configService: ConfigService,
-    private readonly prisma: PrismaService,
   ) {}
 
   @Get()
@@ -68,9 +62,6 @@ export class ServiceController {
     @Body() body: any,
     @UploadedFile() file: Express.Multer.File,
   ) {
-    console.log(body.data);
-    console.log(file);
-
     if (!file) {
       throw new BadRequestException('File is required');
     }
@@ -164,7 +155,6 @@ export class ServiceController {
       }
     }
 
-
     const updateData: any = {};
 
     // ✅ Update fields only if they exist
@@ -174,13 +164,12 @@ export class ServiceController {
           dtoInstance.name,
           this.serviceService,
         );
-         
       }
 
       if (dtoInstance.description)
         updateData.description = dtoInstance.description;
       if (dtoInstance.category) updateData.category = dtoInstance.category;
-      if(dtoInstance.name) updateData.name = dtoInstance.name
+      if (dtoInstance.name) updateData.name = dtoInstance.name;
     }
 
     // ✅ Update file if exists

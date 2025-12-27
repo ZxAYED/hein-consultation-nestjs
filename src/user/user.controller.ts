@@ -21,8 +21,7 @@ import multer from 'multer';
 import { Roles } from 'src/common/decorator/rolesDecorator';
 import { AuthGuard } from 'src/common/guards/auth/auth.guard';
 import { uploadFileToSupabase } from 'src/utils/common/uploadFileToSupabase';
-import { CreateUserByAdmin, CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
+import { CreateUserDto } from './dto/create-user.dto';
 import { ROLE } from './entities/role.entity';
 import { UserService } from './user.service';
 
@@ -50,6 +49,10 @@ export class UserController {
     return this.userService.getMyProfileInfo(req.user.id);
   }
 
+  @Post('/temp-login')
+  async TempLogin(@Body('email') email: string) {
+    return this.userService.tempLogin(email);
+  }
   @UseGuards(AuthGuard)
   @Roles()
   @Get('/dashboard-statics')
@@ -211,20 +214,5 @@ export class UserController {
   @Roles(ROLE.ADMIN, ROLE.CUSTOMER)
   deleteMyselfAccount(@Req() req: Request & { user: any }) {
     return this.userService.deleteMyselfAccount(req.user.id);
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.userService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.userService.update(+id, updateUserDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.userService.remove(+id);
   }
 }

@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-import { User, UserRole } from '@prisma/client';
+import { UserRole } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { getPagination } from 'src/common/utils/pagination';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -188,7 +188,32 @@ export class UserService {
     });
     return sendResponse('User Verified Successfully', result);
   }
+  async tempLogin(email: string) {
+    const isUserExist = await this.prisma.user.findUnique({
+      where: { email },
+    });
+    if (!isUserExist) {
+      throw new NotFoundException('User not found');
+    }
 
+    const result = await this.prisma.user.update({
+      where: { email },
+      data: {
+        loginOtp: null,
+        loginOtpExpireIn: null,
+      },
+    });
+
+    const access_token = this.jwtService.sign({
+      id: result.id,
+      firstName: result.firstName,
+      lastName: result.lastName,
+      email: result.email,
+      role: result.role,
+    });
+
+    return sendResponse('User Login Successfully', { access_token });
+  }
   async login(email: string, password: string) {
     try {
       const isUserExist = await this.prisma.user.findUnique({
@@ -299,7 +324,6 @@ export class UserService {
     );
   }
 
-
   async verifyLoginOtp(email: string, otp: string) {
     try {
       const isUserExist = await this.prisma.user.findUnique({
@@ -380,11 +404,11 @@ export class UserService {
     try {
       const result = await this.prisma.user.findUnique({
         where: { id },
-        select:{
-          lastPasswordChangeTime:true,
-          loginTime:true,
-          registrationTime:true
-        }
+        select: {
+          lastPasswordChangeTime: true,
+          loginTime: true,
+          registrationTime: true,
+        },
       });
 
       return sendResponse('Profile Information Fetched Successfully', result);
@@ -520,11 +544,6 @@ export class UserService {
 
   async updateProfile(id: string, data: UpdateUserDto) {
     try {
-      const updatedData = {
-        ...data,
-        lastUpdateProfileTime: new Date(),
-      };
-
       const result = await this.prisma.user.update({
         where: { id },
         data,

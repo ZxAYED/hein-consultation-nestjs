@@ -1,10 +1,4 @@
-import {
-  IsString,
-  IsNotEmpty,
-  IsArray,
-  ArrayNotEmpty,
-  IsEnum,
-} from 'class-validator';
+import { IsString, IsNotEmpty, IsEnum } from 'class-validator';
 import { ServiceCategory } from '@prisma/client';
 
 export class CreateServiceDto {
@@ -17,7 +11,6 @@ export class CreateServiceDto {
   description: string;
 
   @IsEnum(ServiceCategory, {
-    each: true,
     message: 'Invalid category provided.',
   })
   category: ServiceCategory;
