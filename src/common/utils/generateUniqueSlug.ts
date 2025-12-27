@@ -36,3 +36,29 @@ export async function generateUniqueSlug(
 
   return slug;
 }
+
+
+
+
+export async function generateServiceSlug(
+  name: string,
+  serviceService: any,
+): Promise<string> {
+  const baseSlug = generateSlug(name);
+  let slug = baseSlug;
+  let counter = 1;
+
+  // Check if slug exists
+  let exists = await serviceService.findBySlug(slug);
+
+  while (exists) {
+    // Add counter + date to make it unique
+    const datePart = formatDate(new Date());
+    slug = `${baseSlug}-${counter}-${datePart}`;
+    exists = await serviceService.findBySlug(slug);
+    counter++;
+  }
+
+  return slug;
+}
+

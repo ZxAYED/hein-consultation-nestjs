@@ -50,6 +50,13 @@ export class UserController {
     return this.userService.getMyProfileInfo(req.user.id);
   }
 
+  @UseGuards(AuthGuard)
+  @Roles()
+  @Get('/dashboard-statics')
+  dashboardStatics(@Req() req: Request & { user: { id: string } }) {
+    return this.userService.getStatics(req.user.id);
+  }
+
   @Post()
   @UseInterceptors(FileInterceptor('file', { storage: multer.memoryStorage() }))
   async create(
@@ -201,7 +208,7 @@ export class UserController {
 
   @Delete('delete-myself-account')
   @UseGuards(AuthGuard)
-   @Roles(ROLE.ADMIN, ROLE.CUSTOMER)
+  @Roles(ROLE.ADMIN, ROLE.CUSTOMER)
   deleteMyselfAccount(@Req() req: Request & { user: any }) {
     return this.userService.deleteMyselfAccount(req.user.id);
   }

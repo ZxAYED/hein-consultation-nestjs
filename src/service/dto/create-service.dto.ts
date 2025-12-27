@@ -16,11 +16,9 @@ export class CreateServiceDto {
   @IsNotEmpty({ message: 'Description is required.' })
   description: string;
 
-  @IsArray({ message: 'Categories must be an array.' })
-  @ArrayNotEmpty({ message: 'At least one category is required.' })
   @IsEnum(ServiceCategory, {
     each: true,
     message: 'Invalid category provided.',
   })
-  category: ServiceCategory[];
+  category: ServiceCategory;
 }

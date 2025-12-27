@@ -376,6 +376,22 @@ export class UserService {
       throw new BadRequestException(error);
     }
   }
+  async getStatics(id: string) {
+    try {
+      const result = await this.prisma.user.findUnique({
+        where: { id },
+        select:{
+          lastPasswordChangeTime:true,
+          loginTime:true,
+          registrationTime:true
+        }
+      });
+
+      return sendResponse('Profile Information Fetched Successfully', result);
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
+  }
 
   async changePassword(
     email: string,
