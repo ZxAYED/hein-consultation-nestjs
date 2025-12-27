@@ -397,6 +397,20 @@ export class AppointmentService {
     return sendResponse('Appointments retrieved successfully', data);
   }
 
+  async getAppointmentsForExport(actor: Pick<User, 'id' | 'role'>) {
+    const data = await this.prisma.appointment.findMany({
+      where: { userId: actor.id },
+      orderBy: { scheduledAt: 'desc' },
+      include: {
+        slot: {
+          select: { startTime: true, endTime: true, status: true },
+        },
+      },
+    });
+
+    return data;
+  }
+
   async getOne(id: string, actor: Pick<User, 'id' | 'role'>) {
     const appointment = await this.prisma.appointment.findUnique({
       where: { id },

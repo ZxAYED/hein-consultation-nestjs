@@ -34,9 +34,6 @@ export class DocumentService {
     payload: { fileUrls: string[]; format: string | null; size: number },
     actor: Pick<User, 'id'>,
   ) {
-    // console.log("🚀 ~ DocumentService ~ create ~ actor:", actor)
-    // console.log("🚀 ~ DocumentService ~ create ~ payload:", payload)
-    // console.log("🚀 ~ DocumentService ~ create ~ dto:", dto)
     try {
       const appointmentRef = dto.appointmentId;
       const invoiceRef = dto.invoiceId;
@@ -84,115 +81,15 @@ export class DocumentService {
     }
   }
 
-  // async list(query: GetDocumentsQueryDto, actor: Pick<User, 'id' | 'role'>) {
-  //   console.log("🚀 ~ DocumentService ~ list ~ query:", query)
-
-  //   const isAdmin = actor.role === UserRole.ADMIN;
-  //   const where: Prisma.DocumentWhereInput = {};
-
-  //   // If the user is not an admin, fetch only their documents
-  //   if (!isAdmin) {
-  //     where.userId = actor.id;
-  //   }
-
-  //   if (query.type) {
-  //     where.type = query.type;
-  //   }
-
-  //   if (query.status) {
-  //     where.status = query.status;
-  //   }
-
-  //   if (query.appointmentId) {
-  //     where.appointmentId = query.appointmentId;
-  //   }
-
-  //   if (query.invoiceId) {
-  //     where.invoiceId = query.invoiceId;
-  //   }
-
-  //   if (query.appointmentNo) {
-  //     where.appointment = { appointmentNo: query.appointmentNo };
-  //   }
-
-  //   if (query.invoiceNo) {
-  //     where.invoice = { invoiceNo: query.invoiceNo };
-  //   }
-
-  //   const tagFilters = new Set<string>();
-  //   if (query.tag) {
-  //     tagFilters.add(query.tag);
-  //   }
-  //   if (Array.isArray(query.tags)) {
-  //     query.tags.forEach((tag) => tagFilters.add(tag));
-  //   }
-  //   if (tagFilters.size) {
-  //     where.tags = { hasSome: Array.from(tagFilters) };
-  //   }
-
-  //   // Full-text search in name or description fields
-  //   if (query.search?.trim()) {
-  //     const search = query.search.trim();
-  //     where.OR = [
-  //       { name: { contains: search, mode: 'insensitive' } },
-  //       { description: { contains: search, mode: 'insensitive' } },
-  //     ];
-  //   }
-
-  //   const totalItems = await this.prisma.document.count({ where });
-
-  //   const { skip, take, meta } = getPagination(
-  //     query.page,
-  //     query.limit,
-  //     totalItems,
-  //   );
-
-  //   const data = await this.prisma.document.findMany({
-  //     where,
-  //     select: {
-  //       id: true,
-  //       name: true,
-  //       type: true,
-  //       status: true,
-  //       format: true,
-  //       size: true,
-  //       fileUrls: true,
-  //       tags: true,
-  //       description: true,
-  //       createdAt: true,
-  //       updatedAt: true,
-  //       appointment: {
-  //         select: {
-  //           appointmentNo: true,
-  //           serviceName: true,
-  //           id: true,
-  //         },
-  //       },
-  //       invoice: {
-  //         select: { invoiceNo: true, amount: true, id: true },
-  //       },
-  //     },
-  //     orderBy: { createdAt: 'desc' },
-  //     skip,
-  //     take,
-  //   });
-
-  //   return sendResponse('Documents retrieved successfully', { data, meta });
-  // }
-
   async list(query: GetDocumentsQueryDto, actor: Pick<User, 'id' | 'role'>) {
-    // console.log('🚀 ~ DocumentService ~ list ~ query:', query);
-
     const isAdmin = actor.role === UserRole.ADMIN;
 
     const andConditions: Prisma.DocumentWhereInput[] = [];
 
-    // 🔐 User restriction
     if (!isAdmin) {
       andConditions.push({ userId: actor.id });
     }
 
-    // 📄 Basic filters
     if (query.type) {
       andConditions.push({ type: query.type });
     }
@@ -209,7 +106,6 @@ export class DocumentService {
       andConditions.push({ invoiceId: query.invoiceId });
     }
 
-    // 🔗 Relation exact match filters
     if (query.appointmentNo) {
       andConditions.push({
         appointment: {
@@ -226,17 +122,13 @@ export class DocumentService {
       });
     }
 
-    // 🏷️ Tags filter
     const tagFilters = new Set<string>();
-
     if (query.tag) {
       tagFilters.add(query.tag);
     }
-
     if (Array.isArray(query.tags)) {
       query.tags.forEach((tag) => tagFilters.add(tag));
     }
-
     if (tagFilters.size) {
       andConditions.push({
         tags: {
@@ -245,10 +137,8 @@ export class DocumentService {
       });
     }
 
-    // 🔍 Search (OR inside AND)
     if (query.search?.trim()) {
       const search = query.search.trim();
-
       andConditions.push({
         OR: [
           { name: { contains: search, mode: 'insensitive' } },
@@ -257,20 +147,16 @@ export class DocumentService {
       });
     }
 
-    // 🧠 Final where condition
     const where: Prisma.DocumentWhereInput =
       andConditions.length > 0 ? { AND: andConditions } : {};
 
-    // 📊 Count
     const totalItems = await this.prisma.document.count({ where });
-
     const { skip, take, meta } = getPagination(
       query.page,
       query.limit,
       totalItems,
     );
 
-    // 📂 Data fetch
     const data = await this.prisma.document.findMany({
       where,
       select: {
@@ -400,7 +286,6 @@ export class DocumentService {
       }
 
       await this.cleanupUploadedFiles(document.fileUrls ?? []);
-
       await this.prisma.document.delete({ where: { id: document.id } });
 
       return sendResponse('Document deleted successfully');
@@ -463,7 +348,7 @@ export class DocumentService {
     );
     const parts = path.split('/').filter(Boolean);
     if (parts.length < 2) return null;
-    parts.shift(); // drop bucket name
+    parts.shift();
     return parts.join('/');
   }
 
