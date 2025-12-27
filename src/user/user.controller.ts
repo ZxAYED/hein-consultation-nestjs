@@ -22,7 +22,6 @@ import { Roles } from 'src/common/decorator/rolesDecorator';
 import { AuthGuard } from 'src/common/guards/auth/auth.guard';
 import { uploadFileToSupabase } from 'src/utils/common/uploadFileToSupabase';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 import { ROLE } from './entities/role.entity';
 import { UserService } from './user.service';
 
@@ -54,6 +53,13 @@ export class UserController {
   async TempLogin(@Body('email') email: string) {
     return this.userService.tempLogin(email);
   }
+  @UseGuards(AuthGuard)
+  @Roles()
+  @Get('/dashboard-statics')
+  dashboardStatics(@Req() req: Request & { user: { id: string } }) {
+    return this.userService.getStatics(req.user.id);
+  }
+
   @Post()
   @UseInterceptors(FileInterceptor('file', { storage: multer.memoryStorage() }))
   async create(
@@ -208,20 +214,5 @@ export class UserController {
   @Roles(ROLE.ADMIN, ROLE.CUSTOMER)
   deleteMyselfAccount(@Req() req: Request & { user: any }) {
     return this.userService.deleteMyselfAccount(req.user.id);
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.userService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.userService.update(+id, updateUserDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.userService.remove(+id);
   }
 }

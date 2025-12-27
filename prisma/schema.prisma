@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider          = "postgresql"
+  url               = env("DATABASE_URL")
+  
 }
 
 model User {
@@ -30,17 +31,21 @@ model User {
   loginOtpExpireIn          DateTime?
   resetPasswordOtp          String?
   resetPasswordOtpExpireIn  DateTime?
+  lastPasswordChangeTime    DateTime?
+  loginTime                 DateTime?
+  registrationTime          DateTime?
   isVerified                Boolean   @default(false)
   isBlocked                 Boolean   @default(false)
   isDeleted                 Boolean   @default(false)
   createdAt                 DateTime  @default(now())
   updatedAt                 DateTime  @updatedAt
 
-  documents    Document[]
-  invoices     Invoice[]
-  appointments Appointment[]
-  blogs        Blog[]
+  documents     Document[]
+  invoices      Invoice[]
+  appointments  Appointment[]
+  blogs         Blog[]
   notifications Notification[]
+  services      Service[]
 }
 
 model ScheduleSlot {
@@ -87,6 +92,7 @@ model Appointment {
   slot      ScheduleSlot @relation(fields: [slotId], references: [id])
   documents Document[]
   invoice   Invoice?
+
   @@index([appointmentNo])
 }
 
@@ -108,23 +114,11 @@ model Document {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user        User            @relation(fields: [userId], references: [id])
-  appointment Appointment?    @relation(fields: [appointmentId], references: [id])
-  invoice     Invoice?        @relation(fields: [invoiceId], references: [id])
+  user        User         @relation(fields: [userId], references: [id])
+  appointment Appointment? @relation(fields: [appointmentId], references: [id])
+  invoice     Invoice?     @relation(fields: [invoiceId], references: [id])
   // audits      DocumentAudit[]
 }
-
-// model DocumentAudit {
-//   id            String              @id @default(uuid())
-//   documentId    String
-//   action        DocumentAuditAction
-//   performedById String
-//   metadata      Json?
-//   createdAt     DateTime            @default(now())
-
-//   document    Document @relation(fields: [documentId], references: [id])
-//   performedBy User     @relation(fields: [performedById], references: [id])
-// }
 
 model Invoice {
   id            String  @id @default(uuid())
@@ -201,6 +195,30 @@ enum NotificationEvent {
   INVOICE_PAID
   BLOG_CREATED
   ADMIN_MANUAL
+}
+
+model Service {
+  id          String          @id @default(uuid())
+  name        String
+  category    ServiceCategory
+  adminId     String
+  slug        String          @unique
+  description String
+  status      ServiceStatus
+  image       String
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  admin       User            @relation(fields: [adminId], references: [id])
+}
+
+enum ServiceCategory {
+  Consulting
+  Training
+}
+
+enum ServiceStatus {
+  Active
+  Inactive
 }
 
 enum BlogCategory {

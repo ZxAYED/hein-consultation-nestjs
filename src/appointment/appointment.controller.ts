@@ -61,7 +61,6 @@ export class AppointmentController {
 
     const dto = plainToInstance(CreateAppointmentDto, dtoObject);
 
-    console.log(dtoObject);
     const errors = validateSync(dto, {
       whitelist: true,
       forbidNonWhitelisted: true,

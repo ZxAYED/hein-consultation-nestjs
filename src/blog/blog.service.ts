@@ -1,13 +1,13 @@
 import {
-  Injectable,
   BadRequestException,
+  Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
 import { Blog, NotificationEvent, UserRole } from '@prisma/client';
-import { sendResponse } from 'src/utils/sendResponse';
 import { getPagination } from 'src/common/utils/pagination';
 import { EventService } from 'src/event/event.service';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { sendResponse } from 'src/utils/sendResponse';
 
 @Injectable()
 export class BlogService {
