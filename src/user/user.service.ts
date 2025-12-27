@@ -229,7 +229,6 @@ export class UserService {
         data: {
           loginOtp: otp,
           loginOtpExpireIn: otpExpiry,
-          loginTime: new Date(),
         },
       });
       console.log('🚀 ~ UserService ~ login ~ result:', result);
@@ -300,52 +299,6 @@ export class UserService {
     );
   }
 
-  // async verifyLoginOtp(email: string, otp: string) {
-  //   try {
-  //     const isUserExist = await this.prisma.user.findUnique({
-  //       where: { email },
-  //     });
-  //     if (!isUserExist) {
-  //       throw new NotFoundException('User not found');
-  //     }
-  //     if (!isUserExist.isVerified) {
-  //       throw new ConflictException('User not verified');
-  //     }
-  //     if (isUserExist.loginOtp !== otp) {
-  //       throw new BadRequestException('Invalid OTP');
-  //     }
-  //     if ((isUserExist.loginOtpExpireIn as Date) < new Date()) {
-  //       throw new BadRequestException('OTP Expired');
-  //     }
-
-  //     const result = await this.prisma.user.update({
-  //       where: { email },
-  //       data: {
-  //         loginOtp: null,
-  //         loginOtpExpireIn: null,
-  //       },
-  //     });
-
-  //     await this.prisma.user.update({
-  //       where: { email },
-  //       data: {
-  //         lastLoginTime: new Date(),
-  //       },
-  //     });
-
-  //     const access_token = this.jwtService.sign({
-  //       id: result.id,
-  //       firstName: result.firstName,
-  //       lastName: result.lastName,
-  //       email: result.email,
-  //       role: result.role,
-  //     });
-
-  //     return sendResponse('User Verified Successfully', { access_token });
-  //   } catch (error) {
-  //     throw new BadRequestException(error);
-  //   }
-  // }
 
   async verifyLoginOtp(email: string, otp: string) {
     try {
@@ -551,11 +504,10 @@ export class UserService {
 
   async updateProfile(id: string, data: UpdateUserDto) {
     try {
-
-      const updatedData={
+      const updatedData = {
         ...data,
         lastUpdateProfileTime: new Date(),
-      }
+      };
 
       const result = await this.prisma.user.update({
         where: { id },
