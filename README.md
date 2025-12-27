@@ -97,10 +97,4 @@ Strictly speaking, it is **not a full multi-tenant SaaS** yet (there is no expli
 - Compose runs database migrations on startup:
   - `npx prisma migrate deploy && node dist/main.js`
 
-## 🧑‍💼 What This Demonstrates to Hiring Teams
-
-- ✅ Designing a backend around real product workflows (booking, documents, invoices, notifications).
-- ✅ Strong API fundamentals (validation, error handling, RBAC, structured responses).
-- ✅ Database-first thinking with Prisma + migrations, clean relations, and transactional integrity.
-- ✅ Real-time systems (WebSockets) plus durable persistence for notifications and activity logs.
 
