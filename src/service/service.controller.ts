@@ -34,6 +34,7 @@ import { sendResponse } from 'src/utils/sendResponse';
 import { plainToInstance } from 'class-transformer';
 import { CreateServiceDto } from './dto/create-service.dto';
 import { validateOrReject } from 'class-validator';
+import { UpdateServiceDto } from './dto/update-service.dto';
 
 @Controller('service')
 export class ServiceController {
@@ -51,6 +52,11 @@ export class ServiceController {
     @Query('category') category?: string,
   ) {
     return this.serviceService.findAll(page, limit, searchTerm, category);
+  }
+
+  @Get(':slug')
+  findOne(@Param('slug') slug: string) {
+    return this.serviceService.findOne(slug);
   }
 
   @Post()
@@ -115,5 +121,85 @@ export class ServiceController {
 
     const result = await this.serviceService.create(serviceData);
     return sendResponse('Service Created Successfully', result);
+  }
+
+  @UseGuards(AuthGuard)
+  @Roles(ROLE.ADMIN)
+  @Patch('/update-service/:id')
+  @UseInterceptors(FileInterceptor('file', { storage: multer.memoryStorage() }))
+  async update(
+    @Param('id') id: string,
+    @Req() req: Request & { user: any },
+    @Body() body: any,
+    @UploadedFile() file?: Express.Multer.File,
+  ) {
+    if (!body?.data && !file) {
+      throw new BadRequestException(
+        'At least one of data or file must be provided',
+      );
+    }
+
+    let dtoInstance: UpdateServiceDto | null = null;
+
+    // ✅ Handle data if exists
+    if (body?.data) {
+      let parsed: any;
+      try {
+        parsed = JSON.parse(body.data);
+      } catch {
+        throw new BadRequestException('Invalid JSON in body data');
+      }
+
+      dtoInstance = plainToInstance(UpdateServiceDto, parsed);
+
+      try {
+        await validateOrReject(dtoInstance, {
+          validationError: { target: false },
+        });
+      } catch (errors) {
+        const formattedErrors = errors
+          .map((err: any) => Object.values(err.constraints))
+          .flat();
+        throw new BadRequestException(formattedErrors);
+      }
+    }
+
+
+    const updateData: any = {};
+
+    // ✅ Update fields only if they exist
+    if (dtoInstance) {
+      if (dtoInstance.name) {
+        updateData.slug = await generateServiceSlug(
+          dtoInstance.name,
+          this.serviceService,
+        );
+         
+      }
+
+      if (dtoInstance.description)
+        updateData.description = dtoInstance.description;
+      if (dtoInstance.category) updateData.category = dtoInstance.category;
+      if(dtoInstance.name) updateData.name = dtoInstance.name
+    }
+
+    // ✅ Update file if exists
+    if (file) {
+      const imageLink = await uploadFileToSupabase(
+        file,
+        this.configService,
+        'blog',
+      );
+      updateData.image = imageLink;
+    }
+
+    return await this.serviceService.update(id, updateData);
+  }
+
+  @UseGuards(AuthGuard)
+  @Roles(ROLE.ADMIN)
+  @Delete(':slug')
+  remove(@Param('slug') slug: string) {
+    return this.serviceService.remove(slug);
   }
 }

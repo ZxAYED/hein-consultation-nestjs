@@ -20,7 +20,12 @@ export class ServiceService {
     }
   }
 
-  async findAll(page?: number, limit?: number, searchTerm?: string, category?: string) {
+  async findAll(
+    page?: number,
+    limit?: number,
+    searchTerm?: string,
+    category?: string,
+  ) {
     try {
       // Where clause
       const where: any = {};
@@ -60,6 +65,51 @@ export class ServiceService {
   async findBySlug(slug: string): Promise<Service | null> {
     try {
       return await this.prisma.service.findUnique({ where: { slug } });
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
+  }
+
+  async findOne(slug: string) {
+    try {
+      const result = await this.prisma.service.findUnique({ where: { slug } });
+      if (!result) {
+        throw new NotFoundException('Service not found');
+      }
+      return sendResponse('Service Fetched Successfully', result);
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
+  }
+
+  async update(id: string, data: any) {
+    try {
+      const isServiceExist = await this.prisma.service.findUnique({
+        where: { id },
+      });
+      if (!isServiceExist) {
+        throw new NotFoundException('Service not found');
+      }
+      const result = await this.prisma.service.update({
+        where: { id },
+        data,
+      });
+      return sendResponse('Service Updated Successfully', result);
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
+  }
+
+  async remove(slug: string) {
+    try {
+      const isServiceExist = await this.prisma.service.findUnique({
+        where: { slug },
+      });
+      if (!isServiceExist) {
+        throw new NotFoundException('Service not found');
+      }
+      await this.prisma.service.delete({ where: { slug } });
+      return sendResponse('Service Deleted Successfully');
     } catch (error) {
       throw new BadRequestException(error);
     }
