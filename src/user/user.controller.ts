@@ -24,6 +24,7 @@ import { uploadFileToSupabase } from 'src/utils/common/uploadFileToSupabase';
 import { CreateUserDto } from './dto/create-user.dto';
 import { ROLE } from './entities/role.entity';
 import { UserService } from './user.service';
+import { GetSupportDto } from './dto/user.dto';
 
 @Controller('user')
 export class UserController {
@@ -214,5 +215,14 @@ export class UserController {
   @Roles(ROLE.ADMIN, ROLE.CUSTOMER)
   deleteMyselfAccount(@Req() req: Request & { user: any }) {
     return this.userService.deleteMyselfAccount(req.user.id);
+  }
+
+  @Post('/support')
+  @UseInterceptors(FileInterceptor('file', { storage: multer.memoryStorage() }))
+  support(
+    @Body() payload: GetSupportDto,
+    @UploadedFile() file?: Express.Multer.File,
+  ) {
+    return this.userService.getSupport(payload, file);
   }
 }

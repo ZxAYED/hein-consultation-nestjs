@@ -16,6 +16,9 @@ import { sendResponse } from 'src/utils/sendResponse';
 import { sendVerificationEmail } from 'src/utils/sendVerificationEmail';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { GetSupportDto } from './dto/user.dto';
+import { uploadFileToSupabase } from 'src/utils/common/uploadFileToSupabase';
+import { generateSupportEmailTemplate } from 'src/utils/generateSupportEmailTemplate';
 @Injectable()
 export class UserService {
   constructor(
@@ -673,6 +676,54 @@ export class UserService {
     } catch (error) {
       throw new BadRequestException(error);
     }
+  }
+
+  async getSupport(payload: GetSupportDto, file?: Express.Multer.File) {
+    let fileLink: string | undefined;
+
+    if (file) {
+      fileLink = await uploadFileToSupabase(
+        file,
+        this.configService,
+        'support',
+      );
+    }
+
+    const service = await this.prisma.service.findUnique({
+      where: { id: payload.serviceId },
+    });
+
+    if (!service) {
+      throw new NotFoundException('Service not found');
+    }
+
+    const emailBody = generateSupportEmailTemplate(
+      payload,
+      service.name,
+      fileLink,
+    );
+
+    const admins = await this.prisma.user.findMany({
+      where: {
+        role: UserRole.ADMIN,
+      },
+      select: {
+        email: true,
+      },
+    });
+
+    const emails = admins.map((admin) => admin.email);
+
+    for (const email of emails) {
+      await sendVerificationEmail(
+        this.configService,
+        email,
+        `Support-${payload.subject ?? 'Inquiry'}`,
+        emailBody,
+      );
+    }
+
+    return sendResponse('Support Request Sent Successfully');
   }
 
   findOne(id: number) {
