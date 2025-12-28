@@ -47,7 +47,11 @@ export class BlogService {
         where: { slug },
         include: {
           admin: true,
-          comments: true,
+          comments: {
+            include: {
+              user: true,
+            },
+          },
         },
       });
 
