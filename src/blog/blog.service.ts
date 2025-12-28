@@ -150,6 +150,7 @@ export class BlogService {
         throw new NotFoundException('Blog not found');
       }
       await this.prisma.blog.delete({ where: { slug } });
+      return sendResponse('Blog Deleted Successfully');
     } catch (error) {
       throw new BadRequestException(error);
     }
