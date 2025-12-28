@@ -37,9 +37,6 @@ export async function generateUniqueSlug(
   return slug;
 }
 
-
-
-
 export async function generateServiceSlug(
   name: string,
   serviceService: any,
@@ -61,4 +58,3 @@ export async function generateServiceSlug(
 
   return slug;
 }
-

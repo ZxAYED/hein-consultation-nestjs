@@ -6,7 +6,6 @@ import {
 import { PrismaService } from 'src/prisma/prisma.service';
 import { sendResponse } from 'src/utils/sendResponse';
 import { getPagination } from 'src/common/utils/pagination';
-import { Service } from '@prisma/client';
 
 @Injectable()
 export class ServiceService {
@@ -62,7 +61,7 @@ export class ServiceService {
     }
   }
 
-  async findBySlug(slug: string): Promise<Service | null> {
+  async findBySlug(slug: string) {
     try {
       return await this.prisma.service.findUnique({ where: { slug } });
     } catch (error) {

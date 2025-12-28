@@ -23,10 +23,9 @@ import multer from 'multer';
 import { CreateBlogDto } from './dto/create-blog.dto';
 import { generateUniqueSlug } from 'src/common/utils/generateUniqueSlug';
 import { uploadFileToSupabase } from 'src/utils/common/uploadFileToSupabase';
-import { Blog, BlogStatus, Prisma } from '@prisma/client';
+import { BlogStatus } from '@prisma/client';
 import { validateOrReject } from 'class-validator';
 import { plainToInstance } from 'class-transformer';
-import { PrismaService } from 'src/prisma/prisma.service';
 import { UpdateBlogDto } from './dto/update-blog.dto';
 
 @Controller('blog')
@@ -34,7 +33,6 @@ export class BlogController {
   constructor(
     private readonly blogService: BlogService,
     private configService: ConfigService,
-    private readonly prisma: PrismaService,
   ) {}
 
   // @UseGuards(AuthGuard)
@@ -210,8 +208,6 @@ export class BlogController {
         throw new BadRequestException(formattedErrors);
       }
     }
-
-    const adminId = req?.user?.id;
 
     const updateData: any = {};
 
