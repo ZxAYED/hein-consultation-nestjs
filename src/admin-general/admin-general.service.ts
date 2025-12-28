@@ -1,5 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { UpdateAdminGeneralSettingsDto } from './dto/admin-general.dto';
+import {
+  ToggleSettingsDto,
+  UpdateAdminGeneralSettingsDto,
+} from './dto/admin-general.dto';
 import { uploadFileToSupabase } from 'src/utils/common/uploadFileToSupabase';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -33,39 +36,46 @@ export class AdminGeneralService {
       where: { id: this.ADMIN_GENERAL_SETTINGS },
     });
 
-    // Build update and create objects
-    const updateData: any = {
-      platformName: payload.platformName ?? existing?.platformName,
-      slogan: payload.slogan ?? existing?.slogan,
-      language: payload.language ?? existing?.language,
-      timezone: payload.timezone ?? existing?.timezone,
-      currency: payload.currency ?? existing?.currency,
-      isBlogModuleEnabled:
-        payload.isBlogModuleEnabled ?? existing?.isBlogModuleEnabled ?? false,
-      isServiceModuleEnabled:
-        payload.isServiceModuleEnabled ??
-        existing?.isServiceModuleEnabled ??
-        false,
-      ...(imageLink && { logo: imageLink }),
-    };
-
-    const createData: any = {
-      id: this.ADMIN_GENERAL_SETTINGS,
-      platformName: payload.platformName ?? 'Default Platform',
-      slogan: payload.slogan ?? 'Default Slogan',
-      language: payload.language ?? 'en',
-      timezone: payload.timezone ?? 'UTC',
-      currency: payload.currency ?? 'USD',
-      isBlogModuleEnabled: payload.isBlogModuleEnabled ?? false,
-      isServiceModuleEnabled: payload.isServiceModuleEnabled ?? false,
-      logo: imageLink ?? '',
-    };
-
     // Upsert the settings
     return this.prisma.adminGeneralSetting.upsert({
       where: { id: this.ADMIN_GENERAL_SETTINGS },
-      update: updateData,
-      create: createData,
+      update: {
+        currency: payload.currency ?? existing?.currency,
+        language: payload.language ?? existing?.language,
+        logo: imageLink ?? existing?.logo,
+        platformName: payload.platformName ?? existing?.platformName,
+        slogan: payload.slogan ?? existing?.slogan,
+        timezone: payload.timezone ?? existing?.timezone,
+      },
+      create: {
+        currency: payload.currency ?? 'USD',
+        language: payload.language ?? 'en',
+        logo: imageLink ?? '',
+        platformName: payload.platformName ?? 'Default Platform',
+        slogan: payload.slogan ?? 'Default Slogan',
+        timezone: payload.timezone ?? 'UTC',
+      },
+    });
+  }
+
+  async toggleSettings(payload: ToggleSettingsDto) {
+    return await this.prisma.adminGeneralSetting.upsert({
+      where: { id: this.ADMIN_GENERAL_SETTINGS },
+      update: {
+        isBlogModuleEnabled: payload.isBlogModuleEnabled,
+        isServiceModuleEnabled: payload.isServiceModuleEnabled,
+      },
+      create: {
+        id: this.ADMIN_GENERAL_SETTINGS, // required for upsert
+        isBlogModuleEnabled: payload.isBlogModuleEnabled ?? false,
+        isServiceModuleEnabled: payload.isServiceModuleEnabled ?? false,
+        platformName: 'Default Platform', // optional defaults
+        slogan: 'Default Slogan',
+        language: 'en',
+        timezone: 'UTC',
+        currency: 'USD',
+        logo: '',
+      },
     });
   }
 

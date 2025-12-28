@@ -27,7 +27,9 @@ export class UpdateAdminGeneralSettingsDto {
   @IsOptional()
   @IsString()
   currency?: string;
+}
 
+export class ToggleSettingsDto {
   @IsOptional()
   @Transform(toBoolean)
   @IsBoolean()

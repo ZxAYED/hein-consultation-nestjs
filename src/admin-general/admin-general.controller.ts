@@ -8,7 +8,7 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { AdminGeneralService } from './admin-general.service';
-import { UpdateAdminGeneralSettingsDto } from './dto/admin-general.dto';
+import { ToggleSettingsDto, UpdateAdminGeneralSettingsDto } from './dto/admin-general.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import multer from 'multer';
 import { AuthGuard } from 'src/common/guards/auth/auth.guard';
@@ -24,10 +24,17 @@ export class AdminGeneralController {
   @UseGuards(AuthGuard)
   @Roles(ROLE.ADMIN)
   async updateGeneralSettings(
-    @Body('data') payload: UpdateAdminGeneralSettingsDto,
+    @Body() payload: UpdateAdminGeneralSettingsDto,
     @UploadedFile() image?: Express.Multer.File,
   ) {
     return this.adminGeneralService.updateGeneralSettings(payload, image);
+  }
+
+  @Patch('/toggle')
+  @UseGuards(AuthGuard)
+  @Roles(ROLE.ADMIN)
+  async toggleSettings(@Body() payload: ToggleSettingsDto) {
+    return this.adminGeneralService.toggleSettings(payload);
   }
 
   @Get('/')
