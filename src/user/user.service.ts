@@ -299,7 +299,6 @@ export class UserService {
     );
   }
 
-
   async verifyLoginOtp(email: string, otp: string) {
     try {
       const isUserExist = await this.prisma.user.findUnique({
@@ -380,11 +379,11 @@ export class UserService {
     try {
       const result = await this.prisma.user.findUnique({
         where: { id },
-        select:{
-          lastPasswordChangeTime:true,
-          loginTime:true,
-          registrationTime:true
-        }
+        select: {
+          lastPasswordChangeTime: true,
+          loginTime: true,
+          registrationTime: true,
+        },
       });
 
       return sendResponse('Profile Information Fetched Successfully', result);
