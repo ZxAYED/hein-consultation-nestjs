@@ -43,7 +43,13 @@ export class BlogService {
 
   async findBySlug2(slug: string) {
     try {
-      const result = await this.prisma.blog.findUnique({ where: { slug } });
+      const result = await this.prisma.blog.findUnique({
+        where: { slug },
+        include: {
+          admin: true,
+          comments: true,
+        },
+      });
 
       if (!result) {
         throw new NotFoundException('Blog not found');
@@ -79,7 +85,7 @@ export class BlogService {
         skip,
         take,
         orderBy: { createdAt: 'desc' },
-        include: { admin: true },
+        include: { admin: true, comments: true },
       });
 
       return sendResponse('Blogs fetched successfully', { data, meta });
