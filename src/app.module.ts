@@ -16,6 +16,7 @@ import { UserModule } from './user/user.module';
 
 import { BlogModule } from './blog/blog.module';
 import { ServiceModule } from './service/service.module';
+import { AdminGeneralModule } from './admin-general/admin-general.module';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { ServiceModule } from './service/service.module';
     AdminNotificationModule,
     DashboardModule,
     ServiceModule,
+    AdminGeneralModule,
   ],
   controllers: [AppController],
   providers: [AppService],

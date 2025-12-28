@@ -3,9 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider          = "postgresql"
-  url               = env("DATABASE_URL")
-  
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model User {
@@ -209,6 +208,21 @@ model Service {
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
   admin       User            @relation(fields: [adminId], references: [id])
+}
+
+model AdminGeneralSetting {
+  id                     String  @id @default("AdminGeneralSettingSingletonId")
+  platformName           String
+  slogan                 String
+  language               String
+  timezone               String
+  currency               String
+  logo                   String
+  isBlogModuleEnabled    Boolean @default(true)
+  isServiceModuleEnabled Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 enum ServiceCategory {
