@@ -18,7 +18,13 @@ type ClientContext = {
 
 @WebSocketGateway({
   path: '/ws/notifications',
-  cors: { origin: '*' },
+  cors: {
+    origin: [
+      '*',
+      'https://marcus-hein-alpha.vercel.app',
+      'http://localhost:5173',
+    ],
+  },
 })
 @Injectable()
 export class NotificationGateway

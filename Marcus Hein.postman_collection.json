@@ -1,10 +1,10 @@
 {
 	"info": {
-		"_postman_id": "0581e61f-9ec6-49ca-9f9e-5a3e0fbab055",
-		"name": "Marcus Hein",
+		"_postman_id": "89bcfb30-df74-40c3-b97c-a97b1a52e93c",
+		"name": "Marcus Hein ( Humayun )",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "39781146",
-		"_collection_link": "https://next-level-4-arms-team.postman.co/workspace/Team-Workspace~8e12135a-9505-41ce-8b0f-eb129435841e/collection/39781146-0581e61f-9ec6-49ca-9f9e-5a3e0fbab055?action=share&source=collection_link&creator=39781146"
+		"_collection_link": "https://next-level-4-arms-team.postman.co/workspace/Team-Workspace~8e12135a-9505-41ce-8b0f-eb129435841e/collection/39781146-89bcfb30-df74-40c3-b97c-a97b1a52e93c?action=share&source=collection_link&creator=39781146"
 	},
 	"item": [
 		{
@@ -23,7 +23,7 @@
 									"formdata": [
 										{
 											"key": "data",
-											"value": "{\n  \"firstName\": \"Humayun\",\n  \"lastName\": \"Kabir\",\n\"email\":\"mdhumayunkabirbd586@gmail.com\",\n  \"companyName\": \"Tech Solutions Ltd\",\n  \"street\": \"123 Main Street\",\n  \"city\": \"New York\",\n  \"zip\": \"10001\",\n  \"country\": \"USA\",\n  \"phoneNumber\": \"+1-555-123-4567\",\n  \"vatUid\": \"US123456789\",\n  \"companyRegistrationNumber\": \"REG-987654\",\n  \"password\": \"123456\",\n  \"subject\": \"Account Registration\"\n}\n",
+											"value": "{\n  \"firstName\": \"Humayun\",\n  \"lastName\": \"Kabir\",\n\"email\":\"devhumayun.tech@gmail.com\",\n  \"companyName\": \"Tech Solutions Ltd\",\n  \"street\": \"123 Main Street\",\n  \"city\": \"New York\",\n  \"zip\": \"10001\",\n  \"country\": \"USA\",\n  \"phoneNumber\": \"+1-555-123-4567\",\n  \"vatUid\": \"US123456789\",\n  \"companyRegistrationNumber\": \"REG-987654\",\n  \"password\": \"123456\",\n  \"subject\": \"Account Registration\"\n}\n",
 											"type": "text"
 										},
 										{
@@ -34,9 +34,9 @@
 									]
 								},
 								"url": {
-									"raw": "{{base-api}}/user",
+									"raw": "{{live-api}}/user",
 									"host": [
-										"{{base-api}}"
+										"{{live-api}}"
 									],
 									"path": [
 										"user"
@@ -91,7 +91,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"email\":\"mdhumayunkabirbd586@gmail.com\"\r\n}",
+									"raw": "{\r\n    \"email\":\"devhumayun.tech@gmail.com\"\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -118,7 +118,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"email\":\"ot00xe7mmw@bwmyga.com\",\r\n    \"otp\":\"267487\"\r\n}",
+									"raw": "{\r\n    \"email\":\"devhumayun.tech@gmail.com\",\r\n    \"otp\":\"771150\"\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -145,7 +145,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"email\":\"mdhumayunkabirbd586@gmail.com\",\r\n    \"password\":\"25802580\"\r\n}",
+									"raw": "{\r\n    \"email\":\"devhumayun.tech@gmail.com\",\r\n    \"password\":\"123456\"\r\n}\r\n// {\r\n//     \"email\":\"mdhumayunkabirbd586@gmail.com\",\r\n//     \"password\":\"123456\"\r\n// }",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -153,9 +153,9 @@
 									}
 								},
 								"url": {
-									"raw": "{{base-api}}/user/login",
+									"raw": "{{live-api}}/user/login",
 									"host": [
-										"{{base-api}}"
+										"{{live-api}}"
 									],
 									"path": [
 										"user",
@@ -172,7 +172,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"email\":\"mdhumayunkabirbd586@gmail.com\",\r\n    \"oldPassword\":\"12345678\",\r\n    \"newPassword\":\"123456\"\r\n}",
+									"raw": "{\r\n    \"email\":\"mdhumayunkabirbd586@gmail.com\",\r\n    \"oldPassword\":\"123456\",\r\n    \"newPassword\":\"12345678\"\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -226,7 +226,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"email\":\"mdhumayunkabirbd586@gmail.com\",\r\n    \"otp\":\"376277\",\r\n    \"newPassword\":\"25802580\"\r\n}",
+									"raw": "{\r\n    \"email\": \"mdhumayunkabirbd586@gmail.com\",\r\n    \"otp\": \"376277\",\r\n    \"newPassword\": \"25802580\"\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -280,7 +280,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n    \"email\":\"mdhumayunkabirbd586@gmail.com\",\r\n    \"otp\":\"192335\"\r\n}",
+									"raw": "{\r\n    \"email\":\"devhumayun.tech@gmail.com\",\r\n    \"otp\":\"993594\"\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -299,6 +299,30 @@
 								}
 							},
 							"response": []
+						},
+						{
+							"name": "Delete Myself Acount",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "{{customer-access-token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{base-api}}/user/delete-myself-account",
+									"host": [
+										"{{base-api}}"
+									],
+									"path": [
+										"user",
+										"delete-myself-account"
+									]
+								}
+							},
+							"response": []
 						}
 					]
 				},
@@ -312,12 +336,12 @@
 								"header": [
 									{
 										"key": "Authorization",
-										"value": "{{customer-access-token}}",
+										"value": "{{admin-access-token}}",
 										"type": "text"
 									}
 								],
 								"url": {
-									"raw": "{{base-api}}/user",
+									"raw": "{{base-api}}/user?isBlocked=false",
 									"host": [
 										"{{base-api}}"
 									],
@@ -334,6 +358,10 @@
 											"key": "page",
 											"value": "2",
 											"disabled": true
+										},
+										{
+											"key": "isBlocked",
+											"value": "false"
 										}
 									]
 								}
@@ -344,36 +372,67 @@
 							"name": "Block User",
 							"request": {
 								"method": "PATCH",
-								"header": [],
-								"body": {
-									"mode": "formdata",
-									"formdata": [
-										{
-											"key": "data",
-											"value": "{\n  \"firstName\": \"Humayun\",\n  \"lastName\": \"Kabir\",\n\"email\":\"mdhumayunkabirbd586@gmail.com\",\n  \"companyName\": \"Tech Solutions Ltd\",\n  \"street\": \"123 Main Street\",\n  \"city\": \"New York\",\n  \"zip\": \"10001\",\n  \"country\": \"USA\",\n  \"phoneNumber\": \"+1-555-123-4567\",\n  \"vatUid\": \"US123456789\",\n  \"companyRegistrationNumber\": \"REG-987654\",\n  \"password\": \"123456\",\n  \"subject\": \"Account Registration\"\n}\n",
-											"type": "text"
-										},
-										{
-											"key": "file",
-											"type": "file",
-											"src": "postman-cloud:///1f0dbc80-d4da-45a0-8769-77be3736a00c"
-										}
-									]
-								},
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "{{admin-access-token}}",
+										"type": "text"
+									}
+								],
 								"url": {
-									"raw": "{{base-api}}/user/block-user/:id",
+									"raw": "{{base-api}}/user/block-user/:userId",
 									"host": [
 										"{{base-api}}"
 									],
 									"path": [
 										"user",
 										"block-user",
+										":userId"
+									],
+									"variable": [
+										{
+											"key": "userId",
+											"value": "076d47db-86cb-4116-8626-1cda8fa4920c"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Change Role",
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "{{admin-access-token}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n    \"role\":\"CUSTOMER\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base-api}}/user/change-role/:id",
+									"host": [
+										"{{base-api}}"
+									],
+									"path": [
+										"user",
+										"change-role",
 										":id"
 									],
 									"variable": [
 										{
 											"key": "id",
-											"value": ""
+											"value": "076d47db-86cb-4116-8626-1cda8fa4920c"
 										}
 									]
 								}
@@ -384,36 +443,27 @@
 							"name": "Unblock User",
 							"request": {
 								"method": "PATCH",
-								"header": [],
-								"body": {
-									"mode": "formdata",
-									"formdata": [
-										{
-											"key": "data",
-											"value": "{\n  \"firstName\": \"Humayun\",\n  \"lastName\": \"Kabir\",\n\"email\":\"mdhumayunkabirbd586@gmail.com\",\n  \"companyName\": \"Tech Solutions Ltd\",\n  \"street\": \"123 Main Street\",\n  \"city\": \"New York\",\n  \"zip\": \"10001\",\n  \"country\": \"USA\",\n  \"phoneNumber\": \"+1-555-123-4567\",\n  \"vatUid\": \"US123456789\",\n  \"companyRegistrationNumber\": \"REG-987654\",\n  \"password\": \"123456\",\n  \"subject\": \"Account Registration\"\n}\n",
-											"type": "text"
-										},
-										{
-											"key": "file",
-											"type": "file",
-											"src": "postman-cloud:///1f0dbc80-d4da-45a0-8769-77be3736a00c"
-										}
-									]
-								},
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "{{admin-access-token}}",
+										"type": "text"
+									}
+								],
 								"url": {
-									"raw": "{{base-api}}/user/unblock-user/:id",
+									"raw": "{{base-api}}/user/unblock-user/:userId",
 									"host": [
 										"{{base-api}}"
 									],
 									"path": [
 										"user",
 										"unblock-user",
-										":id"
+										":userId"
 									],
 									"variable": [
 										{
-											"key": "id",
-											"value": ""
+											"key": "userId",
+											"value": "076d47db-86cb-4116-8626-1cda8fa4920c"
 										}
 									]
 								}
@@ -424,37 +474,76 @@
 							"name": "Delete User",
 							"request": {
 								"method": "DELETE",
-								"header": [],
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "{{admin-access-token}}",
+										"type": "text"
+									}
+								],
 								"body": {
-									"mode": "formdata",
-									"formdata": [
-										{
-											"key": "data",
-											"value": "{\n  \"firstName\": \"Humayun\",\n  \"lastName\": \"Kabir\",\n\"email\":\"mdhumayunkabirbd586@gmail.com\",\n  \"companyName\": \"Tech Solutions Ltd\",\n  \"street\": \"123 Main Street\",\n  \"city\": \"New York\",\n  \"zip\": \"10001\",\n  \"country\": \"USA\",\n  \"phoneNumber\": \"+1-555-123-4567\",\n  \"vatUid\": \"US123456789\",\n  \"companyRegistrationNumber\": \"REG-987654\",\n  \"password\": \"123456\",\n  \"subject\": \"Account Registration\"\n}\n",
-											"type": "text"
-										},
-										{
-											"key": "file",
-											"type": "file",
-											"src": "postman-cloud:///1f0dbc80-d4da-45a0-8769-77be3736a00c"
-										}
-									]
+									"mode": "raw",
+									"raw": ""
 								},
 								"url": {
-									"raw": "{{base-api}}/user/delete-user/:id",
+									"raw": "{{base-api}}/user/delete-user/:userId",
 									"host": [
 										"{{base-api}}"
 									],
 									"path": [
 										"user",
 										"delete-user",
-										":id"
+										":userId"
 									],
 									"variable": [
 										{
-											"key": "id",
-											"value": ""
+											"key": "userId",
+											"value": "076d47db-86cb-4116-8626-1cda8fa4920c"
 										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Add User Without OTP",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": ""
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create User Without otp",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "{{admin-access-token}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"firstName\": \"Humayun\",\r\n  \"lastName\": \"Kabir\",\r\n  \"email\": \"devhumayun.tech@gmail.com\",\r\n  \"role\": \"ADMIN\",\r\n  \"companyName\": \"Tech Solutions Ltd\",\r\n  \"phoneNumber\": \"+8801712345678\",\r\n  \"password\": \"123456\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{base-api}}/user/create-user-without-otp",
+									"host": [
+										"{{base-api}}"
+									],
+									"path": [
+										"user",
+										"create-user-without-otp"
 									]
 								}
 							},
@@ -489,88 +578,195 @@
 			]
 		},
 		{
-			"name": "schedule",
+			"name": "Blog",
 			"item": [
 				{
-					"name": "create schedule",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "{{admin-access-token}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n  \"serviceName\": \"SAP System Optimization\",\r\n  \"date\": \"2025-12-22\",\r\n  \"startTime\": \"09:00\",\r\n  \"endTime\": \"7:00\",\r\n  \"durationMin\": 30\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
+					"name": "Admin",
+					"item": [
+						{
+							"name": "Delete Blog",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base-api}}/blog/:slug",
+									"host": [
+										"{{base-api}}"
+									],
+									"path": [
+										"blog",
+										":slug"
+									],
+									"variable": [
+										{
+											"key": "slug",
+											"value": "getting-started-with-react-and-typescript-3-20251224"
+										}
+									]
 								}
-							}
+							},
+							"response": []
 						},
-						"url": {
-							"raw": "{{live-api}}/schedule/generate",
-							"host": [
-								"{{live-api}}"
-							],
-							"path": [
-								"schedule",
-								"generate"
-							]
+						{
+							"name": "Create Blog",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "{{admin-access-token}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "data",
+											"value": "{ \"title\": \"Getting Started with React and TypeScript testing perpose\", \"excerpt\": \"A beginner-friendly guide to building modern web apps with React and TypeScript. for testing perpose\", \"content\": \"<p>React and TypeScript together make building scalable web applications much easier...</p>\", \"categories\": [\"Web_Development\", \"Tutorial\"], \"tags\": [\"REACT\", \"TYPESCRIPT\", \"JAVASCRIPT\", \"CSS\", \"HTML\"] }",
+											"type": "text"
+										},
+										{
+											"key": "file",
+											"type": "file",
+											"src": "postman-cloud:///1f0dbc80-d4da-45a0-8769-77be3736a00c"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base-api}}/blog",
+									"host": [
+										"{{base-api}}"
+									],
+									"path": [
+										"blog"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Blog",
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "{{admin-access-token}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "data",
+											"value": "{ \"title\": \"Hello TypeScript\", \"excerpt\": \"A beginner-friendly guide to building modern web apps with React and TypeScript. for testing perpose\", \"content\": \"<p>React and TypeScript together make building scalable web applications much easier...</p>\", \"categories\": [\"Web_Development\", \"Tutorial\"], \"tags\": [\"REACT\", \"TYPESCRIPT\", \"JAVASCRIPT\", \"CSS\", \"HTML\"] }",
+											"type": "text",
+											"disabled": true
+										},
+										{
+											"key": "file",
+											"type": "file",
+											"src": "/C:/Users/Humayun/Desktop/Marcus Photo/martins-zemlickis-zbukvoF68UY-unsplash.jpg"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base-api}}/blog/update-blog/:blogID",
+									"host": [
+										"{{base-api}}"
+									],
+									"path": [
+										"blog",
+										"update-blog",
+										":blogID"
+									],
+									"variable": [
+										{
+											"key": "blogID",
+											"value": "a8f7af4f-be03-4fc6-822f-63b5e95cee08"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete Blog",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "{{admin-access-token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{base-api}}/blog/:slug",
+									"host": [
+										"{{base-api}}"
+									],
+									"path": [
+										"blog",
+										":slug"
+									],
+									"variable": [
+										{
+											"key": "slug",
+											"value": "getting-started-with-react-and-typescript-3-20251224"
+										}
+									]
+								}
+							},
+							"response": []
 						}
-					},
-					"response": []
+					]
 				},
 				{
-					"name": "get slots",
+					"name": "Get All Blog",
 					"request": {
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{base-url}}/schedule/slots",
+							"raw": "{{base-api}}/blog",
 							"host": [
-								"{{base-url}}"
+								"{{base-api}}"
 							],
 							"path": [
-								"schedule",
-								"slots"
+								"blog"
+							],
+							"query": [
+								{
+									"key": "searchTerm",
+									"value": "testing perpose",
+									"disabled": true
+								}
 							]
 						}
 					},
 					"response": []
 				},
 				{
-					"name": "update status",
+					"name": "Get Single Blog By Slug",
 					"request": {
-						"method": "PATCH",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "{{admin-access-token}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{ \"status\": \"Booked\" }",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
+						"method": "GET",
+						"header": [],
 						"url": {
-							"raw": "{{live-api}}/schedule/slots/2c3057be-7b0a-4a7e-b763-f0802516721b",
+							"raw": "{{base-api}}/blog/:slug",
 							"host": [
-								"{{live-api}}"
+								"{{base-api}}"
 							],
 							"path": [
-								"schedule",
-								"slots",
-								"2c3057be-7b0a-4a7e-b763-f0802516721b"
+								"blog",
+								":slug"
+							],
+							"variable": [
+								{
+									"key": "slug",
+									"value": "getting-started-with-react-and-typescript-1-20251226"
+								}
 							]
 						}
 					},
@@ -579,54 +775,183 @@
 			]
 		},
 		{
-			"name": "appointment",
+			"name": "Service",
 			"item": [
 				{
-					"name": "get attacthments",
+					"name": "Admin",
+					"item": [
+						{
+							"name": "Delete Blog",
+							"request": {
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{base-api}}/blog/:slug",
+									"host": [
+										"{{base-api}}"
+									],
+									"path": [
+										"blog",
+										":slug"
+									],
+									"variable": [
+										{
+											"key": "slug",
+											"value": "getting-started-with-react-and-typescript-3-20251224"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Service",
+							"request": {
+								"method": "POST",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "{{admin-access-token}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "data",
+											"value": "{\n    \"name\": \"Website Development Service testing perpose\",\n    \"description\": \"We provide full-stack web development services using modern technologies like React, NestJS, and PostgreSQL.\",\n    \"category\": \"Consulting\"\n}",
+											"type": "text"
+										},
+										{
+											"key": "file",
+											"type": "file",
+											"src": "/C:/Users/Humayun/Desktop/Marcus Photo/men.jpg"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base-api}}/service",
+									"host": [
+										"{{base-api}}"
+									],
+									"path": [
+										"service"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Service",
+							"request": {
+								"method": "PATCH",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "{{admin-access-token}}",
+										"type": "text"
+									}
+								],
+								"body": {
+									"mode": "formdata",
+									"formdata": [
+										{
+											"key": "data",
+											"value": "{\n    \"name\": \"hello 123\"\n}",
+											"type": "text"
+										},
+										{
+											"key": "file",
+											"type": "file",
+											"src": "/C:/Users/Humayun/Desktop/Marcus Photo/martins-zemlickis-zbukvoF68UY-unsplash.jpg"
+										}
+									]
+								},
+								"url": {
+									"raw": "{{base-api}}/service/update-service/:serviceID",
+									"host": [
+										"{{base-api}}"
+									],
+									"path": [
+										"service",
+										"update-service",
+										":serviceID"
+									],
+									"variable": [
+										{
+											"key": "serviceID",
+											"value": "9f8fdf85-4847-4081-ae33-fd6dc4e62124"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete Service",
+							"request": {
+								"method": "DELETE",
+								"header": [
+									{
+										"key": "Authorization",
+										"value": "{{admin-access-token}}",
+										"type": "text"
+									}
+								],
+								"url": {
+									"raw": "{{base-api}}/service/:slug",
+									"host": [
+										"{{base-api}}"
+									],
+									"path": [
+										"service",
+										":slug"
+									],
+									"variable": [
+										{
+											"key": "slug",
+											"value": "website-development-service-2-20251227"
+										}
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Get All Service",
 					"request": {
 						"method": "GET",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "{{customer-access-token}}",
-								"type": "text"
-							}
-						],
+						"header": [],
 						"url": {
-							"raw": "{{live-api}}/appointments?page=1&limit=20",
+							"raw": "{{base-api}}/service",
 							"host": [
-								"{{live-api}}"
+								"{{base-api}}"
 							],
 							"path": [
-								"appointments"
+								"service"
 							],
 							"query": [
 								{
-									"key": "page",
-									"value": "1"
+									"key": "searchTerm",
+									"value": "testing perpose",
+									"disabled": true
 								},
 								{
 									"key": "limit",
-									"value": "20"
-								},
-								{
-									"key": "status ",
-									"value": null,
+									"value": "20",
 									"disabled": true
 								},
 								{
-									"key": "serviceName",
-									"value": null,
+									"key": "page",
+									"value": "10",
 									"disabled": true
 								},
 								{
-									"key": "fromDate",
-									"value": null,
-									"disabled": true
-								},
-								{
-									"key": "toDate",
-									"value": null,
+									"key": "category",
+									"value": "Training",
 									"disabled": true
 								}
 							]
@@ -635,7 +960,36 @@
 					"response": []
 				},
 				{
-					"name": "single",
+					"name": "Get Single Service By Slug",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base-api}}/service/:slug",
+							"host": [
+								"{{base-api}}"
+							],
+							"path": [
+								"service",
+								":slug"
+							],
+							"variable": [
+								{
+									"key": "slug",
+									"value": "website-development-service-2-20251227"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Dashborad Statics",
+			"item": [
+				{
+					"name": "Admin And Customer Both",
 					"request": {
 						"method": "GET",
 						"header": [
@@ -646,148 +1000,13 @@
 							}
 						],
 						"url": {
-							"raw": "{{live-api}}/appointments/:id",
+							"raw": "{{base-api}}/user/dashboard-statics",
 							"host": [
-								"{{live-api}}"
+								"{{base-api}}"
 							],
 							"path": [
-								"appointments",
-								":id"
-							],
-							"query": [
-								{
-									"key": "status ",
-									"value": null,
-									"disabled": true
-								},
-								{
-									"key": "serviceName",
-									"value": null,
-									"disabled": true
-								},
-								{
-									"key": "fromDate",
-									"value": null,
-									"disabled": true
-								},
-								{
-									"key": "toDate",
-									"value": null,
-									"disabled": true
-								}
-							],
-							"variable": [
-								{
-									"key": "id",
-									"value": ""
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "create",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "{{customer-access-token}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "formdata",
-							"formdata": [
-								{
-									"key": "data",
-									"value": "{\n  \"userId\": \"27084baf-11a7-4630-b7a1-27594c2ec39e\",\n \"serviceName\": \"SAP_CONSULTING_SESSION\",\n  \"slotId\": \"99f27f8f-832a-4312-a8be-b1003f3c258f\",\n  \"meetingType\": \"Virtual\",\n  \"note\": \"optional\"\n}",
-									"type": "text"
-								},
-								{
-									"key": "files",
-									"type": "file",
-									"src": [
-										"/D:/Projects/courier-frontend/parcel-parse-backend/.DS_Store",
-										"/D:/Projects/courier-frontend/parcel-parse-backend/.gitignore"
-									]
-								}
-							]
-						},
-						"url": {
-							"raw": "{{live-api}}/appointments",
-							"host": [
-								"{{live-api}}"
-							],
-							"path": [
-								"appointments"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "patch by customer",
-					"request": {
-						"method": "PATCH",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "{{customer-access-token}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"action\": \"cancel | update\",\r\n    \"meetingType\": \"Virtual\",\r\n    \"note\": \"Please call me on WhatsApp first\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{live-api}}/appointments/b9651dbc-6947-49c3-83a4-3c3335b7df10",
-							"host": [
-								"{{live-api}}"
-							],
-							"path": [
-								"appointments",
-								"b9651dbc-6947-49c3-83a4-3c3335b7df10"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "patch by admin",
-					"request": {
-						"method": "PATCH",
-						"header": [
-							{
-								"key": "Authorization",
-								"value": "{{admin-access-token}}",
-								"type": "text"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n  \"action\": \"complete\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "{{live-api}}/appointments/b9651dbc-6947-49c3-83a4-3c3335b7df10",
-							"host": [
-								"{{live-api}}"
-							],
-							"path": [
-								"appointments",
-								"b9651dbc-6947-49c3-83a4-3c3335b7df10"
+								"user",
+								"dashboard-statics"
 							]
 						}
 					},
@@ -835,8 +1054,7 @@
 		},
 		{
 			"key": "admin-access-token",
-			"value": "",
-			"type": "default"
+			"value": ""
 		}
 	]
 }
