@@ -1,3 +1,5 @@
 {
-  "prisma.pinToPrisma6": true
+  "prisma.pinToPrisma6": true,
+  "material-icon-theme.activeIconPack": "nest",
+  "cSpell.words": ["appoinment", "supabase"]
 }

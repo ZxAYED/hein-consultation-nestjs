@@ -223,6 +223,21 @@ model Service {
   admin       User            @relation(fields: [adminId], references: [id])
 }
 
+model AdminGeneralSetting {
+  id                     String  @id @default("AdminGeneralSettingSingletonId")
+  platformName           String
+  slogan                 String
+  language               String
+  timezone               String
+  currency               String
+  logo                   String
+  isBlogModuleEnabled    Boolean @default(true)
+  isServiceModuleEnabled Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 enum ServiceCategory {
   Consulting
   Training

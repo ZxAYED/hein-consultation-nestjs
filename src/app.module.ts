@@ -16,6 +16,7 @@ import { UserModule } from './user/user.module';
 
 import { BlogModule } from './blog/blog.module';
 import { ServiceModule } from './service/service.module';
+import { AdminGeneralModule } from './admin-general/admin-general.module';
 import { CommentModule } from './comment/comment.module';
 
 @Module({
@@ -36,6 +37,7 @@ import { CommentModule } from './comment/comment.module';
     AdminNotificationModule,
     DashboardModule,
     ServiceModule,
+    AdminGeneralModule,
     CommentModule,
   ],
   controllers: [AppController],
