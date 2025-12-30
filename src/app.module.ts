@@ -3,11 +3,13 @@ import { Module } from '@nestjs/common';
 import { BullModule } from '@nestjs/bullmq';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ActivityModule } from './activity/activity.module';
+import { AdminGeneralModule } from './admin-general/admin-general.module';
 import { AdminNotificationModule } from './admin-notification/admin-notification.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AppointmentModule } from './appointment/appointment.module';
 import { BlogModule } from './blog/blog.module';
+import { CommentModule } from './comment/comment.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { DocumentModule } from './document/document.module';
 import { EventModule } from './event/event.module';
@@ -47,6 +49,8 @@ import { UserModule } from './user/user.module';
       }),
     }),
     QueueModule,
+    AdminGeneralModule,
+    CommentModule,
   ],
   controllers: [AppController],
   providers: [AppService],

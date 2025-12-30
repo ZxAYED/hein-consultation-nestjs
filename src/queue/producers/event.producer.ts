@@ -15,10 +15,15 @@ export class EventProducer {
     await this.queue.add(JOB.SYSTEM_EVENT, payload, {
       attempts: 3,
       backoff: { type: 'exponential', delay: 1000 },
+      removeOnComplete: true,
     });
   }
 
   async emitAdmin(payload: AdminEventPayload) {
-    await this.queue.add(JOB.ADMIN_EVENT, payload);
+    await this.queue.add(JOB.ADMIN_EVENT, payload, {
+      attempts: 3,
+      backoff: { type: 'exponential', delay: 1000 },
+      removeOnComplete: true,
+    });
   }
 }

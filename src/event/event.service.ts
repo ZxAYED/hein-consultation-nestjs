@@ -1,15 +1,16 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import {
-  Notification,
-  NotificationEvent,
-  Prisma,
-  UserRole,
-} from '@prisma/client';
+import { NotificationEvent, Prisma, UserRole } from '@prisma/client';
 import { randomUUID } from 'crypto';
-import { ActivityService } from 'src/activity/activity.service';
-import { NotificationGateway } from 'src/notification/notification.gateway';
 import { NotificationService } from 'src/notification/notification.service';
-import { PrismaService } from 'src/prisma/prisma.service';
+import {
+  ActivityCreatePayload,
+  ActivityProducer,
+} from 'src/queue/producers/activity.producer';
+import { EventProducer } from 'src/queue/producers/event.producer';
+import {
+  NotificationCreatePayload,
+  NotificationProducer,
+} from 'src/queue/producers/notification.producer';
 import { sendResponse } from 'src/utils/sendResponse';
 
 export type SystemEventPayload = {
@@ -34,13 +35,28 @@ export type AdminEventPayload = {
 @Injectable()
 export class EventService {
   constructor(
-    private readonly prisma: PrismaService,
-    private readonly activityService: ActivityService,
     private readonly notificationService: NotificationService,
-    private readonly notificationGateway: NotificationGateway,
+    private readonly activityProducer: ActivityProducer,
+    private readonly eventProducer: EventProducer,
+    private readonly notificationProducer: NotificationProducer,
   ) {}
 
   async emitSystemEvent(payload: SystemEventPayload) {
+    await this.eventProducer.emitSystem(payload);
+    return sendResponse('Event queued successfully');
+  }
+
+  async emitAdminEvent(payload: AdminEventPayload) {
+    this.notificationService.validateManualPayload({
+      userIds: payload.userIds,
+      broadcast: payload.broadcast,
+    });
+
+    await this.eventProducer.emitAdmin(payload);
+    return sendResponse('Admin notification queued successfully');
+  }
+
+  async processSystemEvent(payload: SystemEventPayload) {
     const targets = await this.resolveSystemTargets(payload);
     if (!targets.length) {
       throw new BadRequestException('No target users resolved');
@@ -56,35 +72,33 @@ export class EventService {
       message: content.message,
     });
 
-    const createdNotifications: Notification[] = [];
+    const activityJobs: ActivityCreatePayload[] = [];
+    const notificationJobs: NotificationCreatePayload[] = [];
 
-    await this.prisma.$transaction(async (tx) => {
-      for (const userId of targets) {
-        await this.activityService.createActivity(tx, {
-          event: payload.event,
-          entityId: payload.entityId,
-          actorId: payload.actorId,
-          userId,
-          metadata: mergedMetadata,
-        });
+    for (const userId of targets) {
+      activityJobs.push({
+        event: payload.event,
+        entityId: payload.entityId,
+        actorId: payload.actorId,
+        userId,
+        metadata: mergedMetadata,
+      });
 
-        const notification = await this.notificationService.createNotification(
-          tx,
-          {
-            userId,
-            event: payload.event,
-            title: content.title,
-            message: content.message,
-            metadata: payload.metadata ?? undefined,
-          },
-        );
+      notificationJobs.push({
+        userId,
+        event: payload.event,
+        title: content.title,
+        message: content.message,
+        metadata: payload.metadata ?? undefined,
+      });
+    }
 
-        createdNotifications.push(notification);
-      }
-    });
+    for (const job of activityJobs) {
+      await this.activityProducer.create(job);
+    }
 
-    for (const notification of createdNotifications) {
-      this.notificationGateway.emitNotification(notification);
+    for (const job of notificationJobs) {
+      await this.notificationProducer.create(job);
     }
 
     return sendResponse('Event emitted successfully', {
@@ -92,7 +106,7 @@ export class EventService {
     });
   }
 
-  async emitAdminEvent(payload: AdminEventPayload) {
+  async processAdminEvent(payload: AdminEventPayload) {
     this.notificationService.validateManualPayload({
       userIds: payload.userIds,
       broadcast: payload.broadcast,
@@ -108,40 +122,38 @@ export class EventService {
     }
 
     const entityId = randomUUID();
-    const createdNotifications: Notification[] = [];
+    const activityJobs: ActivityCreatePayload[] = [];
+    const notificationJobs: NotificationCreatePayload[] = [];
     const mergedMetadata = this.mergeActivityMetadata({
       event: NotificationEvent.ADMIN_MANUAL,
       metadata: payload.metadata,
       message: payload.message,
     });
 
-    await this.prisma.$transaction(async (tx) => {
-      for (const userId of targets) {
-        await this.activityService.createActivity(tx, {
-          event: NotificationEvent.ADMIN_MANUAL,
-          entityId,
-          actorId: payload.actorId,
-          userId,
-          metadata: mergedMetadata,
-        });
+    for (const userId of targets) {
+      activityJobs.push({
+        event: NotificationEvent.ADMIN_MANUAL,
+        entityId,
+        actorId: payload.actorId,
+        userId,
+        metadata: mergedMetadata,
+      });
 
-        const notification = await this.notificationService.createNotification(
-          tx,
-          {
-            userId,
-            event: NotificationEvent.ADMIN_MANUAL,
-            title: payload.title,
-            message: payload.message,
-            metadata: payload.metadata ?? undefined,
-          },
-        );
+      notificationJobs.push({
+        userId,
+        event: NotificationEvent.ADMIN_MANUAL,
+        title: payload.title,
+        message: payload.message,
+        metadata: payload.metadata ?? undefined,
+      });
+    }
 
-        createdNotifications.push(notification);
-      }
-    });
+    for (const job of activityJobs) {
+      await this.activityProducer.create(job);
+    }
 
-    for (const notification of createdNotifications) {
-      this.notificationGateway.emitNotification(notification);
+    for (const job of notificationJobs) {
+      await this.notificationProducer.create(job);
     }
 
     return sendResponse('Notifications created successfully', {

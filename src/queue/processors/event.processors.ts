@@ -1,10 +1,10 @@
-/* eslint-disable prettier/prettier */
+
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Job } from 'bullmq';
 import {
-    AdminEventPayload,
-    EventService,
-    SystemEventPayload,
+  AdminEventPayload,
+  EventService,
+  SystemEventPayload,
 } from 'src/event/event.service';
 import { JOB, QUEUE } from '../queue.constants';
 
@@ -17,12 +17,14 @@ export class EventProcessor extends WorkerHost {
   async process(job: Job<SystemEventPayload | AdminEventPayload>) {
     switch (job.name) {
       case JOB.SYSTEM_EVENT:
-        return this.eventService.emitSystemEvent(
+        return await this.eventService.processSystemEvent(
           job.data as SystemEventPayload,
         );
 
       case JOB.ADMIN_EVENT:
-        return this.eventService.emitAdminEvent(job.data as AdminEventPayload);
+        return await this.eventService.processAdminEvent(
+          job.data as AdminEventPayload,
+        );
     }
   }
 }

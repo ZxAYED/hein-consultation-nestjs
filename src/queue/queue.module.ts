@@ -1,29 +1,45 @@
 import { BullModule } from '@nestjs/bullmq';
-import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { Module, forwardRef } from '@nestjs/common';
 import { EventModule } from 'src/event/event.module';
-
+import { NotificationModule } from 'src/notification/notification.module';
+import { PrismaModule } from 'src/prisma/prisma.module';
+import { ActivityProcessor } from './processors/activity.processors';
+import { EmailProcessor } from './processors/email.processors';
 import { EventProcessor } from './processors/event.processors';
+import { NotificationProcessor } from './processors/notification.processors';
+import { ActivityProducer } from './producers/activity.producer';
 import { EmailProducer } from './producers/email.producer';
 import { EventProducer } from './producers/event.producer';
+import { NotificationProducer } from './producers/notification.producer';
 import { QUEUE } from './queue.constants';
 
 @Module({
   imports: [
-    ConfigModule,
-    EventModule, // IMPORTANT (to reuse EventService)
-    BullModule.forRootAsync({
-      inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({
-        connection: {
-          host: config.get('REDIS_HOST'),
-          port: Number(config.get('REDIS_PORT')),
-        },
-      }),
-    }),
-    BullModule.registerQueue({ name: QUEUE.EVENTS }, { name: QUEUE.EMAILS }),
+    forwardRef(() => EventModule), // IMPORTANT (to reuse EventService)
+    NotificationModule,
+    PrismaModule,
+    BullModule.registerQueue(
+      { name: QUEUE.ACTIVITIES },
+      { name: QUEUE.EVENTS },
+      { name: QUEUE.EMAILS },
+      { name: QUEUE.NOTIFICATIONS },
+    ),
   ],
-  providers: [EventProducer, EmailProducer, EventProcessor, EmailProcessor],
-  exports: [EventProducer, EmailProducer],
+  providers: [
+    ActivityProducer,
+    EventProducer,
+    EmailProducer,
+    NotificationProducer,
+    ActivityProcessor,
+    EventProcessor,
+    EmailProcessor,
+    NotificationProcessor,
+  ],
+  exports: [
+    ActivityProducer,
+    EventProducer,
+    EmailProducer,
+    NotificationProducer,
+  ],
 })
 export class QueueModule {}
