@@ -1,21 +1,23 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+
+import { BullModule } from '@nestjs/bullmq';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ActivityModule } from './activity/activity.module';
 import { AdminNotificationModule } from './admin-notification/admin-notification.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AppointmentModule } from './appointment/appointment.module';
+import { BlogModule } from './blog/blog.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { DocumentModule } from './document/document.module';
 import { EventModule } from './event/event.module';
 import { InvoiceModule } from './invoice/invoice.module';
 import { NotificationModule } from './notification/notification.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { QueueModule } from './queue/queue.module';
 import { ScheduleModule } from './schedule/schedule.module';
-import { UserModule } from './user/user.module';
-
-import { BlogModule } from './blog/blog.module';
 import { ServiceModule } from './service/service.module';
+import { UserModule } from './user/user.module';
 
 @Module({
   imports: [
@@ -35,6 +37,16 @@ import { ServiceModule } from './service/service.module';
     AdminNotificationModule,
     DashboardModule,
     ServiceModule,
+    BullModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        connection: {
+          host: config.get('REDIS_HOST'),
+          port: Number(config.get('REDIS_PORT')),
+        },
+      }),
+    }),
+    QueueModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -3,13 +3,23 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: arafat2025/marcus-app:latest
-    platform: linux/amd64
     container_name: marcus-app
-    restart: unless-stopped
     env_file:
       - .env
     ports:
       - "3000:3000"
-    # Auto-run migrations on startup
+    depends_on:
+      - redis
     command: sh -c "npx prisma migrate deploy && node dist/main.js"
+
+  redis:
+    image: redis:7-alpine
+    container_name: hein-redis
+    ports:
+      - "6379:6379"
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+
+volumes:
+  redis_data:

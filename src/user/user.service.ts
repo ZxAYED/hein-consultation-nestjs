@@ -71,7 +71,7 @@ export class UserService {
         'Verify your account',
         htmlText,
       );
-
+      a;
       return sendResponse(
         'User Registration Successfully, Check your email to verify your account, You have 10 minutes to verify your login. If you did not receive the email, please check your spam folder.',
       );
