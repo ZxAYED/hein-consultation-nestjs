@@ -3,6 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import { Blog, BlogStatus, NotificationEvent, UserRole } from '@prisma/client';
 import { getPagination } from 'src/common/utils/pagination';
 import { EventService } from 'src/event/event.service';
@@ -27,7 +28,11 @@ export class BlogService {
         broadcast: true,
         metadata: { blogId: result.id, title: result.title },
       });
-      return sendResponse('Blog Created Successfully', result);
+      if (result.status === BlogStatus.Publish) {
+        return sendResponse('Blog Created Successfully', result);
+      } else if (result.status === BlogStatus.Schedule) {
+        return sendResponse('Blog Created Successfully waiting for approval');
+      }
     } catch (error) {
       throw new BadRequestException(error);
     }
@@ -214,6 +219,33 @@ export class BlogService {
       return sendResponse('Blog Deleted Successfully');
     } catch (error) {
       throw new BadRequestException(error);
+    }
+  }
+
+  @Cron(CronExpression.EVERY_5_MINUTES)
+  async makeScheduleBlogToPublished() {
+    const now = new Date();
+
+    const blogs = await this.prisma.blog.findMany({
+      where: {
+        status: BlogStatus.Schedule,
+        publishDate: {
+          lte: now, // publishDate <= now
+        },
+      },
+    });
+
+    if (!blogs.length) return;
+
+    for (const blog of blogs) {
+      await this.prisma.blog.update({
+        where: { id: blog.id },
+        data: {
+          status: BlogStatus.Publish,
+        },
+      });
+
+      console.log(`Blog published: ${blog.id}`);
     }
   }
 }
