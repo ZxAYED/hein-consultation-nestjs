@@ -35,51 +35,6 @@ export class BlogController {
     private configService: ConfigService,
   ) {}
 
-  // @UseGuards(AuthGuard)
-  // @Roles(ROLE.ADMIN)
-  // @Post()
-  // @UseInterceptors(FileInterceptor('file', { storage: multer.memoryStorage() }))
-  // async create(
-  //   @Req() req: Request & { user: any },
-  //   @Body() body: any,
-  //   @UploadedFile() file: Express.Multer.File,
-  // ) {
-  //   if (!body?.data) throw new BadRequestException('Body data is required');
-  //   if (!file) throw new BadRequestException('File is required');
-
-  //   let parsed: CreateBlogDto;
-  //   try {
-  //     parsed = JSON.parse(body.data);
-  //   } catch {
-  //     throw new BadRequestException('Invalid JSON in body data');
-  //   }
-
-  //   // Generate unique slug
-  //   const slug = await generateUniqueSlug(parsed.title, this.blogService);
-
-  //   // Upload image
-  //   const imageLink = await uploadFileToSupabase(
-  //     file,
-  //     this.configService,
-  //     'blog',
-  //   );
-
-  //   // Add adminId from request user
-  //   const adminId = req?.user?.id;
-
-  //   const status = BlogStatus.Publish;
-
-  //   const blogData = {
-  //     ...parsed,
-  //     slug,
-  //     image: imageLink,
-  //     adminId,
-  //     status,
-  //     publishDate: new Date(),
-  //   } as Blog;
-  //   return await this.blogService.create(blogData);
-  // }
-
   @UseGuards(AuthGuard)
   @Roles(ROLE.ADMIN)
   @Post()
@@ -123,8 +78,26 @@ export class BlogController {
     );
 
     const adminId = req?.user?.id;
-    const status = BlogStatus.Publish;
-    const publishDate = new Date();
+    const rawStatus = parsed?.status;
+    const normalizedStatus =
+      typeof rawStatus === 'string' ? rawStatus.trim().toLowerCase() : null;
+
+    const status =
+      normalizedStatus === 'schedule'
+        ? BlogStatus.Schedule
+        : BlogStatus.Publish;
+
+    const publishDate =
+      status === BlogStatus.Publish
+        ? new Date()
+        : (() => {
+            const value = parsed?.publishDate;
+            const date = value instanceof Date ? value : new Date(value);
+            if (Number.isNaN(date.getTime())) {
+              throw new BadRequestException('publishDate is required');
+            }
+            return date;
+          })();
 
     const blogData: any = {
       ...dtoInstance,
@@ -145,8 +118,16 @@ export class BlogController {
     @Req() req: Request & { user: any },
     @Query('page') page?: number,
     @Query('limit') limit?: number,
+    @Query('searchTerm') searchTerm?: string,
+    @Query('status') status?: BlogStatus,
   ) {
-    return this.blogService.getMyselfBlogs(req?.user?.id, page, limit);
+    return this.blogService.getMyselfBlogs(
+      req?.user?.id,
+      page,
+      limit,
+      searchTerm,
+      status,
+    );
   }
 
   @Get()
@@ -154,8 +135,9 @@ export class BlogController {
     @Query('page') page?: number,
     @Query('limit') limit?: number,
     @Query('searchTerm') searchTerm?: string,
+    @Query('status') status?: BlogStatus,
   ) {
-    return this.blogService.findAll(page, limit, searchTerm);
+    return this.blogService.findAll(page, limit, searchTerm, status); 
   }
 
   @Get(':slug')
