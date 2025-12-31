@@ -35,8 +35,6 @@ export class BlogController {
     private configService: ConfigService,
   ) {}
 
-  
-
   @UseGuards(AuthGuard)
   @Roles(ROLE.ADMIN)
   @Post()
@@ -80,8 +78,26 @@ export class BlogController {
     );
 
     const adminId = req?.user?.id;
-    const status = BlogStatus.Publish;
-    const publishDate = new Date();
+    const rawStatus = parsed?.status;
+    const normalizedStatus =
+      typeof rawStatus === 'string' ? rawStatus.trim().toLowerCase() : null;
+
+    const status =
+      normalizedStatus === 'schedule'
+        ? BlogStatus.Schedule
+        : BlogStatus.Publish;
+
+    const publishDate =
+      status === BlogStatus.Publish
+        ? new Date()
+        : (() => {
+            const value = parsed?.publishDate;
+            const date = value instanceof Date ? value : new Date(value);
+            if (Number.isNaN(date.getTime())) {
+              throw new BadRequestException('publishDate is required');
+            }
+            return date;
+          })();
 
     const blogData: any = {
       ...dtoInstance,
@@ -102,8 +118,16 @@ export class BlogController {
     @Req() req: Request & { user: any },
     @Query('page') page?: number,
     @Query('limit') limit?: number,
+    @Query('searchTerm') searchTerm?: string,
+    @Query('status') status?: BlogStatus,
   ) {
-    return this.blogService.getMyselfBlogs(req?.user?.id, page, limit);
+    return this.blogService.getMyselfBlogs(
+      req?.user?.id,
+      page,
+      limit,
+      searchTerm,
+      status,
+    );
   }
 
   @Get()
@@ -111,8 +135,9 @@ export class BlogController {
     @Query('page') page?: number,
     @Query('limit') limit?: number,
     @Query('searchTerm') searchTerm?: string,
+    @Query('status') status?: BlogStatus,
   ) {
-    return this.blogService.findAll(page, limit, searchTerm);
+    return this.blogService.findAll(page, limit, searchTerm, status); 
   }
 
   @Get(':slug')
