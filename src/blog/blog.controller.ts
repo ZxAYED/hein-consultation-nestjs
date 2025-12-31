@@ -35,50 +35,7 @@ export class BlogController {
     private configService: ConfigService,
   ) {}
 
-  // @UseGuards(AuthGuard)
-  // @Roles(ROLE.ADMIN)
-  // @Post()
-  // @UseInterceptors(FileInterceptor('file', { storage: multer.memoryStorage() }))
-  // async create(
-  //   @Req() req: Request & { user: any },
-  //   @Body() body: any,
-  //   @UploadedFile() file: Express.Multer.File,
-  // ) {
-  //   if (!body?.data) throw new BadRequestException('Body data is required');
-  //   if (!file) throw new BadRequestException('File is required');
-
-  //   let parsed: CreateBlogDto;
-  //   try {
-  //     parsed = JSON.parse(body.data);
-  //   } catch {
-  //     throw new BadRequestException('Invalid JSON in body data');
-  //   }
-
-  //   // Generate unique slug
-  //   const slug = await generateUniqueSlug(parsed.title, this.blogService);
-
-  //   // Upload image
-  //   const imageLink = await uploadFileToSupabase(
-  //     file,
-  //     this.configService,
-  //     'blog',
-  //   );
-
-  //   // Add adminId from request user
-  //   const adminId = req?.user?.id;
-
-  //   const status = BlogStatus.Publish;
-
-  //   const blogData = {
-  //     ...parsed,
-  //     slug,
-  //     image: imageLink,
-  //     adminId,
-  //     status,
-  //     publishDate: new Date(),
-  //   } as Blog;
-  //   return await this.blogService.create(blogData);
-  // }
+  
 
   @UseGuards(AuthGuard)
   @Roles(ROLE.ADMIN)
