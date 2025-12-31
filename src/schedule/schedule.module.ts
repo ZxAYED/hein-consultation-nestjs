@@ -7,4 +7,4 @@ import { ScheduleService } from './schedule.service';
   controllers: [ScheduleController],
   providers: [ScheduleService, AuthGuard],
 })
-export class ScheduleModule {}
+export class ScheduleModules {}

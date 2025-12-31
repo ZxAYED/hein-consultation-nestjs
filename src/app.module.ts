@@ -11,13 +11,14 @@ import { EventModule } from './event/event.module';
 import { InvoiceModule } from './invoice/invoice.module';
 import { NotificationModule } from './notification/notification.module';
 import { PrismaModule } from './prisma/prisma.module';
-import { ScheduleModule } from './schedule/schedule.module';
+import { ScheduleModules } from './schedule/schedule.module';
 import { UserModule } from './user/user.module';
 
 import { BlogModule } from './blog/blog.module';
 import { ServiceModule } from './service/service.module';
 import { AdminGeneralModule } from './admin-general/admin-general.module';
 import { CommentModule } from './comment/comment.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -26,7 +27,7 @@ import { CommentModule } from './comment/comment.module';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    ScheduleModule,
+    ScheduleModules,
     AppointmentModule,
     BlogModule,
     DocumentModule,
@@ -39,6 +40,7 @@ import { CommentModule } from './comment/comment.module';
     ServiceModule,
     AdminGeneralModule,
     CommentModule,
+    ScheduleModule.forRoot(),
   ],
   controllers: [AppController],
   providers: [AppService],
