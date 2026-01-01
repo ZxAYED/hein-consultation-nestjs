@@ -29,6 +29,7 @@
     "@nestjs/passport": "^11.0.5",
     "@nestjs/platform-express": "^11.0.1",
     "@nestjs/platform-ws": "^11.0.1",
+    "@nestjs/schedule": "^6.1.0",
     "@nestjs/websockets": "^11.0.1",
     "@prisma/client": "^6.18.0",
     "@supabase/supabase-js": "^2.89.0",

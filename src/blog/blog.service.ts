@@ -3,7 +3,8 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Blog, NotificationEvent, UserRole } from '@prisma/client';
+import { Cron, CronExpression } from '@nestjs/schedule';
+import { Blog, BlogStatus, NotificationEvent, UserRole } from '@prisma/client';
 import { getPagination } from 'src/common/utils/pagination';
 import { EventService } from 'src/event/event.service';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -27,7 +28,11 @@ export class BlogService {
         broadcast: true,
         metadata: { blogId: result.id, title: result.title },
       });
-      return sendResponse('Blog Created Successfully', result);
+      if (result.status === BlogStatus.Publish) {
+        return sendResponse('Blog Created Successfully', result);
+      } else if (result.status === BlogStatus.Schedule) {
+        return sendResponse('Blog Created Successfully waiting for approval');
+      }
     } catch (error) {
       throw new BadRequestException(error);
     }
@@ -65,7 +70,12 @@ export class BlogService {
     }
   }
 
-  async findAll(page?: number, limit?: number, searchTerm?: string) {
+  async findAll(
+    page?: number,
+    limit?: number,
+    searchTerm?: string,
+    status?: BlogStatus,
+  ) {
     try {
       // Where clause
       const where: any = {};
@@ -75,6 +85,52 @@ export class BlogService {
           { title: { contains: searchTerm, mode: 'insensitive' } },
           { excerpt: { contains: searchTerm, mode: 'insensitive' } },
         ];
+      }
+
+      if (status) {
+        where.status = status;
+      }
+
+      // Total count
+      const totalItems = await this.prisma.blog.count({ where });
+
+      // Pagination
+      const { skip, take, meta } = getPagination(page, limit, totalItems);
+
+      // Fetch data
+      const data = await this.prisma.blog.findMany({
+        where,
+        skip,
+        take,
+        orderBy: { createdAt: 'desc' },
+        include: { admin: true, comments: true },
+      });
+
+      return sendResponse('Blogs fetched successfully', { data, meta });
+    } catch (error) {
+      throw new BadRequestException(error);
+    }
+  }
+  async getMyselfBlogs(
+    id: string,
+    page?: number,
+    limit?: number,
+    searchTerm?: string,
+    status?: BlogStatus,
+  ) {
+    try {
+      // Where clause
+      const where: any = { adminId: id };
+
+      if (searchTerm) {
+        where.OR = [
+          { title: { contains: searchTerm, mode: 'insensitive' } },
+          { excerpt: { contains: searchTerm, mode: 'insensitive' } },
+        ];
+      }
+
+      if (status) {
+        where.status = status;
       }
 
       // Total count
@@ -98,26 +154,26 @@ export class BlogService {
     }
   }
 
-  async getMyselfBlogs(id: string, page?: number, limit?: number) {
-    try {
-      const where: any = { adminId: id };
+  // async getMyselfBlogs(id: string, page?: number, limit?: number) {
+  //   try {
+  //     const where: any = { adminId: id };
 
-      const totalItems = await this.prisma.blog.count({ where });
+  //     const totalItems = await this.prisma.blog.count({ where });
 
-      const { skip, take, meta } = getPagination(page, limit, totalItems);
+  //     const { skip, take, meta } = getPagination(page, limit, totalItems);
 
-      const data = await this.prisma.blog.findMany({
-        where,
-        skip,
-        take,
-        orderBy: { createdAt: 'desc' },
-      });
+  //     const data = await this.prisma.blog.findMany({
+  //       where,
+  //       skip,
+  //       take,
+  //       orderBy: { createdAt: 'desc' },
+  //     });
 
-      return sendResponse('Myself Blogs fetched successfully', { data, meta });
-    } catch (error) {
-      throw new BadRequestException(error);
-    }
-  }
+  //     return sendResponse('Myself Blogs fetched successfully', { data, meta });
+  //   } catch (error) {
+  //     throw new BadRequestException(error);
+  //   }
+  // }
 
   async findOne(id: string): Promise<Blog | null> {
     try {
@@ -163,6 +219,33 @@ export class BlogService {
       return sendResponse('Blog Deleted Successfully');
     } catch (error) {
       throw new BadRequestException(error);
+    }
+  }
+
+  @Cron(CronExpression.EVERY_5_MINUTES)
+  async makeScheduleBlogToPublished() {
+    const now = new Date();
+
+    const blogs = await this.prisma.blog.findMany({
+      where: {
+        status: BlogStatus.Schedule,
+        publishDate: {
+          lte: now, // publishDate <= now
+        },
+      },
+    });
+
+    if (!blogs.length) return;
+
+    for (const blog of blogs) {
+      await this.prisma.blog.update({
+        where: { id: blog.id },
+        data: {
+          status: BlogStatus.Publish,
+        },
+      });
+
+      console.log(`Blog published: ${blog.id}`);
     }
   }
 }

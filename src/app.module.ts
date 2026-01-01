@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 
 import { BullModule } from '@nestjs/bullmq';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ScheduleModule } from '@nestjs/schedule';
 import { ActivityModule } from './activity/activity.module';
 import { AdminGeneralModule } from './admin-general/admin-general.module';
 import { AdminNotificationModule } from './admin-notification/admin-notification.module';
@@ -17,7 +18,8 @@ import { InvoiceModule } from './invoice/invoice.module';
 import { NotificationModule } from './notification/notification.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { QueueModule } from './queue/queue.module';
-import { ScheduleModule } from './schedule/schedule.module';
+
+import { ScheduleModules } from './schedule/schedule.module';
 import { ServiceModule } from './service/service.module';
 import { UserModule } from './user/user.module';
 
@@ -28,7 +30,8 @@ import { UserModule } from './user/user.module';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    ScheduleModule,
+    ScheduleModule.forRoot(),
+    ScheduleModules,
     AppointmentModule,
     BlogModule,
     DocumentModule,
