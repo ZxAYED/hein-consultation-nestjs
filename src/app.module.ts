@@ -44,12 +44,18 @@ import { UserModule } from './user/user.module';
     ServiceModule,
     BullModule.forRootAsync({
       inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({
-        connection: {
-          host: config.get('REDIS_HOST'),
-          port: Number(config.get('REDIS_PORT')),
-        },
-      }),
+      useFactory: (config: ConfigService) => {
+        const host = config.get<string>('REDIS_HOST') ?? '127.0.0.1';
+        const rawPort = Number(config.get<string>('REDIS_PORT') ?? 6379);
+        const port = Number.isFinite(rawPort) ? rawPort : 6379;
+
+        return {
+          connection: {
+            host,
+            port,
+          },
+        };
+      },
     }),
     QueueModule,
     AdminGeneralModule,

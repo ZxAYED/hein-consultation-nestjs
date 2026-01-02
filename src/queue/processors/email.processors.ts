@@ -22,16 +22,21 @@ export class EmailProcessor extends WorkerHost {
       return { ignored: true };
     }
 
-   
-      (await sendVerificationEmail(
-        this.configService,
-        job.data.to,
-        job.data.subject,
-        job.data.html,
-      )) as EmailResult;
+    const result = (await sendVerificationEmail(
+      this.configService,
+      job.data.to,
+      job.data.subject,
+      job.data.html,
+    )) as EmailResult;
 
+    if (!result?.success) {
+      const message =
+        typeof result?.error === 'string'
+          ? result.error
+          : 'Email sending failed';
+      throw new Error(message);
+    }
 
-      return { success: true };
-   
+    return { success: true };
   }
 }

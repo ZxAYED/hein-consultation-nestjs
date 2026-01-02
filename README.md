@@ -82,6 +82,10 @@ Strictly speaking, it is **not a full multi-tenant SaaS** yet (there is no expli
 4. Start the server:
    - `npm run start:dev`
 
+## 🧵 Redis + Queue Guide
+
+- Noob-friendly step-by-step: [redis-bullmq-guide.md](file:///d:/Projects/marcus-backend-nestjs/docs/redis-bullmq-guide.md)
+
 ## ✅ Tests & Quality
 
 - 🧪 Unit tests:
@@ -96,5 +100,4 @@ Strictly speaking, it is **not a full multi-tenant SaaS** yet (there is no expli
 - Docker build generates Prisma client and builds the NestJS app.
 - Compose runs database migrations on startup:
   - `npx prisma migrate deploy && node dist/main.js`
-
 
