@@ -9,7 +9,7 @@ async function getServer() {
 
   serverPromise = (async () => {
     const app = await createNestApp();
-    await app.init();
+    await app.listen(3000); 
     return app.getHttpServer();
   })();
 
