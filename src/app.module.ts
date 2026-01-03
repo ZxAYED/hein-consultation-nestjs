@@ -19,6 +19,8 @@ import { ServiceModule } from './service/service.module';
 import { AdminGeneralModule } from './admin-general/admin-general.module';
 import { CommentModule } from './comment/comment.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { RedisModule } from './redis/redis.module';
+import { CacheModule } from './cache/cache.module';
 
 @Module({
   imports: [
@@ -41,6 +43,8 @@ import { ScheduleModule } from '@nestjs/schedule';
     AdminGeneralModule,
     CommentModule,
     ScheduleModule.forRoot(),
+    RedisModule,
+    CacheModule,
   ],
   controllers: [AppController],
   providers: [AppService],
