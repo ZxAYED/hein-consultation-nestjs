@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { Blog, BlogStatus, NotificationEvent, UserRole } from '@prisma/client';
+import { CacheUtil } from 'src/cache/redis-cache.util';
 import { getPagination } from 'src/common/utils/pagination';
 import { EventService } from 'src/event/event.service';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -15,11 +16,13 @@ export class BlogService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly eventService: EventService,
+    private readonly cacheUtil: CacheUtil,
   ) {}
 
   async create(data: Blog) {
     try {
       const result = await this.prisma.blog.create({ data });
+      await this.cacheUtil.deleteByPattern('blogs:list:*');
       await this.eventService.emitSystemEvent({
         event: NotificationEvent.BLOG_CREATED,
         entityId: result.id,
@@ -31,7 +34,9 @@ export class BlogService {
       if (result.status === BlogStatus.Publish) {
         return sendResponse('Blog Created Successfully', result);
       } else if (result.status === BlogStatus.Schedule) {
-        return sendResponse('Blog Created Successfully waiting for approval');
+        return sendResponse(
+          'Blog Created Successfully, when scheduling time comes it will be published',
+        );
       }
     } catch (error) {
       throw new BadRequestException(error);
@@ -70,6 +75,47 @@ export class BlogService {
     }
   }
 
+  // async findAll(
+  //   page?: number,
+  //   limit?: number,
+  //   searchTerm?: string,
+  //   status?: BlogStatus,
+  // ) {
+  //   try {
+  //     // Where clause
+  //     const where: any = {};
+
+  //     if (searchTerm) {
+  //       where.OR = [
+  //         { title: { contains: searchTerm, mode: 'insensitive' } },
+  //         { excerpt: { contains: searchTerm, mode: 'insensitive' } },
+  //       ];
+  //     }
+
+  //     if (status) {
+  //       where.status = status;
+  //     }
+
+  //     // Total count
+  //     const totalItems = await this.prisma.blog.count({ where });
+
+  //     // Pagination
+  //     const { skip, take, meta } = getPagination(page, limit, totalItems);
+
+  //     // Fetch data
+  //     const data = await this.prisma.blog.findMany({
+  //       where,
+  //       skip,
+  //       take,
+  //       orderBy: { createdAt: 'desc' },
+  //       include: { admin: true, comments: true },
+  //     });
+
+  //     return sendResponse('Blogs fetched successfully', { data, meta });
+  //   } catch (error) {
+  //     throw new BadRequestException(error);
+  //   }
+  // }
   async findAll(
     page?: number,
     limit?: number,
@@ -77,40 +123,52 @@ export class BlogService {
     status?: BlogStatus,
   ) {
     try {
-      // Where clause
-      const where: any = {};
+      const cacheKey = `blogs:list:page=${page || 1}:limit=${
+        limit || 10
+      }:search=${searchTerm || 'all'}:status=${status || 'all'}`;
 
-      if (searchTerm) {
-        where.OR = [
-          { title: { contains: searchTerm, mode: 'insensitive' } },
-          { excerpt: { contains: searchTerm, mode: 'insensitive' } },
-        ];
-      }
+      const result = await this.cacheUtil.getWithAutoRefresh(
+        cacheKey,
+        async () => {
+          const where: any = {};
 
-      if (status) {
-        where.status = status;
-      }
+          if (searchTerm) {
+            where.OR = [
+              { title: { contains: searchTerm, mode: 'insensitive' } },
+              { excerpt: { contains: searchTerm, mode: 'insensitive' } },
+            ];
+          }
 
-      // Total count
-      const totalItems = await this.prisma.blog.count({ where });
+          if (status) {
+            where.status = status;
+          }
 
-      // Pagination
-      const { skip, take, meta } = getPagination(page, limit, totalItems);
+          const totalItems = await this.prisma.blog.count({ where });
 
-      // Fetch data
-      const data = await this.prisma.blog.findMany({
-        where,
-        skip,
-        take,
-        orderBy: { createdAt: 'desc' },
-        include: { admin: true, comments: true },
-      });
+          const { skip, take, meta } = getPagination(page, limit, totalItems);
 
-      return sendResponse('Blogs fetched successfully', { data, meta });
+          const data = await this.prisma.blog.findMany({
+            where,
+            skip,
+            take,
+            orderBy: { createdAt: 'desc' },
+            include: { admin: true, comments: true },
+          });
+
+          return sendResponse('Blogs fetched successfully', {
+            data,
+            meta,
+          });
+        },
+        7200, // TTL 2 Hour
+      );
+
+      return result;
     } catch (error) {
       throw new BadRequestException(error);
     }
   }
+
   async getMyselfBlogs(
     id: string,
     page?: number,
@@ -154,27 +212,6 @@ export class BlogService {
     }
   }
 
-  // async getMyselfBlogs(id: string, page?: number, limit?: number) {
-  //   try {
-  //     const where: any = { adminId: id };
-
-  //     const totalItems = await this.prisma.blog.count({ where });
-
-  //     const { skip, take, meta } = getPagination(page, limit, totalItems);
-
-  //     const data = await this.prisma.blog.findMany({
-  //       where,
-  //       skip,
-  //       take,
-  //       orderBy: { createdAt: 'desc' },
-  //     });
-
-  //     return sendResponse('Myself Blogs fetched successfully', { data, meta });
-  //   } catch (error) {
-  //     throw new BadRequestException(error);
-  //   }
-  // }
-
   async findOne(id: string): Promise<Blog | null> {
     try {
       const blog = await this.prisma.blog.findUnique({ where: { id } });
@@ -201,6 +238,7 @@ export class BlogService {
         where: { id },
         data,
       });
+      await this.cacheUtil.deleteByPattern('blogs:list:*');
       return sendResponse('Blog Updated Successfully', result);
     } catch (error) {
       throw new BadRequestException(error);
@@ -216,6 +254,7 @@ export class BlogService {
         throw new NotFoundException('Blog not found');
       }
       await this.prisma.blog.delete({ where: { slug } });
+      await this.cacheUtil.deleteByPattern('blogs:list:*');
       return sendResponse('Blog Deleted Successfully');
     } catch (error) {
       throw new BadRequestException(error);
