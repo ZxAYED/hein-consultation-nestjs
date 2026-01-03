@@ -11,19 +11,20 @@ import { UserRole } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { getPagination } from 'src/common/utils/pagination';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { EmailProducer } from 'src/queue/producers/email.producer';
+import { uploadFileToSupabase } from 'src/utils/common/uploadFileToSupabase';
 import { generateOtpEmailTemplate } from 'src/utils/generateOtpEmailTemplate';
+import { generateSupportEmailTemplate } from 'src/utils/generateSupportEmailTemplate';
 import { sendResponse } from 'src/utils/sendResponse';
-import { sendVerificationEmail } from 'src/utils/sendVerificationEmail';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { GetSupportDto } from './dto/user.dto';
-import { uploadFileToSupabase } from 'src/utils/common/uploadFileToSupabase';
-import { generateSupportEmailTemplate } from 'src/utils/generateSupportEmailTemplate';
 @Injectable()
 export class UserService {
   constructor(
     private readonly prisma: PrismaService,
     private jwtService: JwtService,
+    private readonly emailProducer: EmailProducer,
     private configService: ConfigService,
   ) {}
 
@@ -58,7 +59,7 @@ export class UserService {
         registrationTime: new Date(),
       };
 
-      console.log(userRegistrationData);
+      // console.log(userRegistrationData);
 
       // console.log(userRegistrationData);
 
@@ -68,13 +69,12 @@ export class UserService {
       const htmlText = generateOtpEmailTemplate(otp);
 
       // Send verification email
-      await sendVerificationEmail(
-        this.configService,
-        createUserDto.email, // user email
-        'Verify your account',
-        htmlText,
-      );
-
+      await this.emailProducer.send({
+        to: createUserDto.email,
+        subject: 'Verify your account',
+        html: htmlText,
+      });
+      
       return sendResponse(
         'User Registration Successfully, Check your email to verify your account, You have 10 minutes to verify your login. If you did not receive the email, please check your spam folder.',
       );
@@ -144,12 +144,11 @@ export class UserService {
     const htmlText = generateOtpEmailTemplate(otp);
 
     // Send verification email
-    await sendVerificationEmail(
-      this.configService,
-      email, // user email
-      'Verify your account',
-      htmlText,
-    );
+    await this.emailProducer.send({
+      to: email,
+      subject: 'Verify your account',
+      html: htmlText,
+    });
 
     return sendResponse(
       'Verification OTP Resend Successfully, Check your email to verify your account, You have 10 minutes to verify your login. If you did not receive the email, please check your spam folder.',
@@ -265,12 +264,11 @@ export class UserService {
       const htmlText = generateOtpEmailTemplate(otp);
 
       // Send verification email
-      await sendVerificationEmail(
-        this.configService,
-        email, // user email
-        'Verify your login',
-        htmlText,
-      );
+      await this.emailProducer.send({
+        to: email,
+        subject: 'Verify your login',
+        html: htmlText,
+      });
 
       return sendResponse(
         'User Login Successfully, Check your email to verify your account, You have 10 minutes to verify your login. If you did not receive the email, please check your spam folder.',
@@ -315,12 +313,11 @@ export class UserService {
     const htmlText = generateOtpEmailTemplate(otp);
 
     // Send verification email
-    await sendVerificationEmail(
-      this.configService,
-      email, // user email
-      'Verify your login',
-      htmlText,
-    );
+    await this.emailProducer.send({
+      to: email,
+      subject: 'Verify your login',
+      html: htmlText,
+    });
 
     return sendResponse(
       'OTP resend Successfully, Check your email to verify your account, You have 10 minutes to verify your login. If you did not receive the email, please check your spam folder.',
@@ -495,12 +492,11 @@ export class UserService {
       const htmlText = generateOtpEmailTemplate(otp);
 
       // Send verification email
-      await sendVerificationEmail(
-        this.configService,
-        email, // user email
-        'Reset your password',
-        htmlText,
-      );
+      await this.emailProducer.send({
+        to: email,
+        subject: 'Reset your password',
+        html: htmlText,
+      });
 
       return sendResponse(
         'Check your email to reset your password, You have 10 minutes to verify. If you did not receive the email, please check your spam folder.',
@@ -715,12 +711,11 @@ export class UserService {
     const emails = admins.map((admin) => admin.email);
 
     for (const email of emails) {
-      await sendVerificationEmail(
-        this.configService,
-        email,
-        `Support-${payload.subject ?? 'Inquiry'}`,
-        emailBody,
-      );
+      await this.emailProducer.send({
+        to: email,
+        subject: `Support-${payload.subject ?? 'Inquiry'}`,
+        html: emailBody,
+      });
     }
 
     return sendResponse('Support Request Sent Successfully');

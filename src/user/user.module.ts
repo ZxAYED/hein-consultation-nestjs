@@ -7,6 +7,7 @@ import { UserService } from './user.service';
 
 @Module({
   imports: [
+   
     JwtModule.registerAsync({
       global: true,
       inject: [ConfigService],

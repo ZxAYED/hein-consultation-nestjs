@@ -2,7 +2,6 @@ import { Controller, Post, Body, Req, UseGuards } from '@nestjs/common';
 import { Request } from 'express';
 import { CommentService } from './comment.service';
 import { Roles } from 'src/common/decorator/rolesDecorator';
-import { ROLE } from 'src/user/entities/role.entity';
 import { AuthGuard } from 'src/common/guards/auth/auth.guard';
 import { CreateCommentDto } from './dto/create-comment.dto';
 

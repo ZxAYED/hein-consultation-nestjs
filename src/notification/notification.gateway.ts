@@ -190,31 +190,24 @@ export class NotificationGateway
     client.send(JSON.stringify({ event, data }));
   }
 
-  private extractToken(request?: IncomingMessage) {
-    if (!request) {
-      return null;
-    }
+  private extractToken(request?: IncomingMessage): string | null {
+    if (!request) return null;
 
     const authHeader = request.headers.authorization;
-    const headerValue = Array.isArray(authHeader) ? authHeader[0] : authHeader;
-    if (headerValue) {
-      return headerValue.startsWith('Bearer ')
-        ? headerValue.slice(7)
-        : headerValue;
+    if (authHeader) {
+      const value = Array.isArray(authHeader) ? authHeader[0] : authHeader;
+      return value.startsWith('Bearer ') ? value.slice(7) : value;
     }
 
-    if (!request.url) {
-      return null;
+    //  Query param fallback
+    if (request.url) {
+      const queryIndex = request.url.indexOf('?');
+      if (queryIndex !== -1) {
+        const params = new URLSearchParams(request.url.slice(queryIndex));
+        return params.get('token');
+      }
     }
 
-    let token: string | null = null;
-    try {
-      const url = new URL(request.url, 'http://localhost');
-      token = url.searchParams.get('token');
-    } catch {
-      token = null;
-    }
-
-    return token;
+    return null;
   }
 }
