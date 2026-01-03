@@ -6,18 +6,66 @@ import {
 import { PrismaService } from 'src/prisma/prisma.service';
 import { sendResponse } from 'src/utils/sendResponse';
 import { getPagination } from 'src/common/utils/pagination';
+import { CacheUtil } from 'src/cache/redis-cache.util';
 
 @Injectable()
 export class ServiceService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly cacheUtil: CacheUtil,
+  ) {}
 
   async create(data: any) {
     try {
-      return await this.prisma.service.create({ data });
+      const result = await this.prisma.service.create({ data });
+      await this.cacheUtil.deleteByPattern('services:list:*'); // invalidate cache
+      return result;
     } catch (error) {
       throw new BadRequestException(error);
     }
   }
+
+  // async findAll(
+  //   page?: number,
+  //   limit?: number,
+  //   searchTerm?: string,
+  //   category?: string,
+  // ) {
+  //   try {
+  //     // Where clause
+  //     const where: any = {};
+
+  //     if (searchTerm) {
+  //       where.OR = [
+  //         { name: { contains: searchTerm, mode: 'insensitive' } },
+  //         { description: { contains: searchTerm, mode: 'insensitive' } },
+  //       ];
+  //     }
+
+  //     if (category) {
+  //       where.category = category;
+  //     }
+
+  //     // Total count
+  //     const totalItems = await this.prisma.service.count({ where });
+
+  //     // Pagination
+  //     const { skip, take, meta } = getPagination(page, limit, totalItems);
+
+  //     // Fetch data
+  //     const data = await this.prisma.service.findMany({
+  //       where,
+  //       skip,
+  //       take,
+  //       orderBy: { createdAt: 'desc' },
+  //       include: { admin: true },
+  //     });
+
+  //     return sendResponse('Blogs fetched successfully', { data, meta });
+  //   } catch (error) {
+  //     throw new BadRequestException(error);
+  //   }
+  // }
 
   async findAll(
     page?: number,
@@ -26,36 +74,41 @@ export class ServiceService {
     category?: string,
   ) {
     try {
-      // Where clause
-      const where: any = {};
+      const cacheKey = `services:list:page=${page || 1}:limit=${limit || 10}:search=${searchTerm || 'all'}:category=${category || 'all'}`;
 
-      if (searchTerm) {
-        where.OR = [
-          { name: { contains: searchTerm, mode: 'insensitive' } },
-          { description: { contains: searchTerm, mode: 'insensitive' } },
-        ];
-      }
+      const result = await this.cacheUtil.getWithAutoRefresh(
+        cacheKey,
+        async () => {
+          const where: any = {};
 
-      if (category) {
-        where.category = category;
-      }
+          if (searchTerm) {
+            where.OR = [
+              { name: { contains: searchTerm, mode: 'insensitive' } },
+              { description: { contains: searchTerm, mode: 'insensitive' } },
+            ];
+          }
 
-      // Total count
-      const totalItems = await this.prisma.service.count({ where });
+          if (category) {
+            where.category = category;
+          }
 
-      // Pagination
-      const { skip, take, meta } = getPagination(page, limit, totalItems);
+          const totalItems = await this.prisma.service.count({ where });
+          const { skip, take, meta } = getPagination(page, limit, totalItems);
 
-      // Fetch data
-      const data = await this.prisma.service.findMany({
-        where,
-        skip,
-        take,
-        orderBy: { createdAt: 'desc' },
-        include: { admin: true },
-      });
+          const data = await this.prisma.service.findMany({
+            where,
+            skip,
+            take,
+            orderBy: { createdAt: 'desc' },
+            include: { admin: true },
+          });
 
-      return sendResponse('Blogs fetched successfully', { data, meta });
+          return sendResponse('Services fetched successfully', { data, meta });
+        },
+        7200, // TTL 2 hours
+      );
+
+      return result;
     } catch (error) {
       throw new BadRequestException(error);
     }
@@ -93,6 +146,8 @@ export class ServiceService {
         where: { id },
         data,
       });
+      await this.cacheUtil.deleteByPattern('services:list:*'); // invalidate cache
+
       return sendResponse('Service Updated Successfully', result);
     } catch (error) {
       throw new BadRequestException(error);
@@ -108,6 +163,8 @@ export class ServiceService {
         throw new NotFoundException('Service not found');
       }
       await this.prisma.service.delete({ where: { slug } });
+      await this.cacheUtil.deleteByPattern('services:list:*'); // invalidate cache
+
       return sendResponse('Service Deleted Successfully');
     } catch (error) {
       throw new BadRequestException(error);

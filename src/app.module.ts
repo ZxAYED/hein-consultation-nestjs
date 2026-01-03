@@ -23,6 +23,9 @@ import { ScheduleModules } from './schedule/schedule.module';
 import { ServiceModule } from './service/service.module';
 import { UserModule } from './user/user.module';
 
+import { CacheModule } from './cache/cache.module';
+import { RedisModule } from './redis/redis.module';
+
 @Module({
   imports: [
     UserModule,
@@ -45,14 +48,14 @@ import { UserModule } from './user/user.module';
     BullModule.forRootAsync({
       inject: [ConfigService],
       useFactory: (config: ConfigService) => {
-        const host = config.get<string>('REDIS_HOST') ?? '127.0.0.1';
-        const rawPort = Number(config.get<string>('REDIS_PORT') ?? 6379);
-        const port = Number.isFinite(rawPort) ? rawPort : 6379;
+        const redisUrl = config.get<string>('REDIS_URL');
+        if (!redisUrl) {
+          throw new Error('REDIS_URL is required for BullMQ');
+        }
 
         return {
           connection: {
-            host,
-            port,
+            url: redisUrl,
           },
         };
       },
@@ -60,6 +63,9 @@ import { UserModule } from './user/user.module';
     QueueModule,
     AdminGeneralModule,
     CommentModule,
+    ScheduleModule.forRoot(),
+    RedisModule,
+    CacheModule,
   ],
   controllers: [AppController],
   providers: [AppService],

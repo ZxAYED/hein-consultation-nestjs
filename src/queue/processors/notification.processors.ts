@@ -1,10 +1,9 @@
 import { InjectQueue, Processor, WorkerHost } from '@nestjs/bullmq';
-import { Job } from 'bullmq';
-import { Queue } from 'bullmq';
+import { Job, Queue } from 'bullmq';
 import { NotificationGateway } from 'src/notification/notification.gateway';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { JOB, QUEUE } from '../queue.constants';
 import type { NotificationCreatePayload } from '../producers/notification.producer';
+import { JOB, QUEUE } from '../queue.constants';
 
 @Processor(QUEUE.NOTIFICATIONS)
 export class NotificationProcessor extends WorkerHost {
@@ -42,6 +41,7 @@ export class NotificationProcessor extends WorkerHost {
             removeOnComplete: true,
           },
         );
+      
         return;
       }
 

@@ -1,17 +1,18 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
+import { CacheUtil } from 'src/cache/redis-cache.util';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { sendResponse } from 'src/utils/sendResponse';
 
 @Injectable()
 export class CommentService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly cacheUtil: CacheUtil,
+  ) {}
 
-  async create(createCommentDto: any) {
-    try {
-      console.log(
-        '?? ~ CommentService ~ create ~ createCommentDto:',
-        createCommentDto,
-      );
+ async create(createCommentDto: any) {
+   try {
+    
 
       const isBlogExist = await this.prisma.blog.findUnique({
         where: { id: createCommentDto.blogId },
@@ -20,12 +21,10 @@ export class CommentService {
         throw new BadRequestException('Blog not found');
       }
 
-      const result = await this.prisma.comment.create({
-        data: createCommentDto,
-      });
-      return sendResponse('Comment Added Successfully', result);
-    } catch (error) {
-      throw new BadRequestException(error);
-    }
+    const result =await this.prisma.comment.create({ data: createCommentDto });
+    return sendResponse('Comment Added Successfully', result);
+   } catch (error) {
+    throw new BadRequestException(error);
+   }
   }
 }
