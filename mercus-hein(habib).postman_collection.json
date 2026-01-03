@@ -1,0 +1,122 @@
+{
+	"info": {
+		"_postman_id": "064e673e-4604-4906-8e45-91add25e774f",
+		"name": "mercus-hein(habib)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "49601387"
+	},
+	"item": [
+		{
+			"name": "update admin general setting",
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{admin-access-token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "file",
+							"type": "file",
+							"src": "/C:/Users/Habib/Downloads/Oopbuy.png"
+						},
+						{
+							"key": "platformName",
+							"value": "platform",
+							"type": "text"
+						},
+						{
+							"key": "slogan",
+							"value": "slogan",
+							"type": "text"
+						},
+						{
+							"key": "language",
+							"value": "en",
+							"type": "text"
+						},
+						{
+							"key": "timezone",
+							"value": "utc",
+							"type": "text"
+						},
+						{
+							"key": "currency",
+							"value": "usd",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{live-api}}/admin-general/update",
+					"host": [
+						"{{live-api}}"
+					],
+					"path": [
+						"admin-general",
+						"update"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get general settings",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "{{admin-access-token}}",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "data",
+							"value": "{\n    \"platformName\":\"mercus-hein\",\n    \"slogan\":\"slogan\",\n    \n}",
+							"type": "text"
+						},
+						{
+							"key": "file",
+							"type": "file",
+							"src": "/C:/Users/Habib/Downloads/Oopbuy.png"
+						}
+					]
+				},
+				"url": {
+					"raw": "{{live-api}}/admin-general",
+					"host": [
+						"{{live-api}}"
+					],
+					"path": [
+						"admin-general"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "live-api",
+			"value": "",
+			"type": "default"
+		},
+		{
+			"key": "admin-access-token",
+			"value": "",
+			"type": "default"
+		}
+	]
+}

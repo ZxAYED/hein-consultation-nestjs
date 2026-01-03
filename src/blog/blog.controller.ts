@@ -23,10 +23,9 @@ import multer from 'multer';
 import { CreateBlogDto } from './dto/create-blog.dto';
 import { generateUniqueSlug } from 'src/common/utils/generateUniqueSlug';
 import { uploadFileToSupabase } from 'src/utils/common/uploadFileToSupabase';
-import { Blog, BlogStatus, Prisma } from '@prisma/client';
+import { BlogStatus } from '@prisma/client';
 import { validateOrReject } from 'class-validator';
 import { plainToInstance } from 'class-transformer';
-import { PrismaService } from 'src/prisma/prisma.service';
 import { UpdateBlogDto } from './dto/update-blog.dto';
 
 @Controller('blog')
@@ -34,53 +33,7 @@ export class BlogController {
   constructor(
     private readonly blogService: BlogService,
     private configService: ConfigService,
-    private readonly prisma: PrismaService,
   ) {}
-
-  // @UseGuards(AuthGuard)
-  // @Roles(ROLE.ADMIN)
-  // @Post()
-  // @UseInterceptors(FileInterceptor('file', { storage: multer.memoryStorage() }))
-  // async create(
-  //   @Req() req: Request & { user: any },
-  //   @Body() body: any,
-  //   @UploadedFile() file: Express.Multer.File,
-  // ) {
-  //   if (!body?.data) throw new BadRequestException('Body data is required');
-  //   if (!file) throw new BadRequestException('File is required');
-
-  //   let parsed: CreateBlogDto;
-  //   try {
-  //     parsed = JSON.parse(body.data);
-  //   } catch {
-  //     throw new BadRequestException('Invalid JSON in body data');
-  //   }
-
-  //   // Generate unique slug
-  //   const slug = await generateUniqueSlug(parsed.title, this.blogService);
-
-  //   // Upload image
-  //   const imageLink = await uploadFileToSupabase(
-  //     file,
-  //     this.configService,
-  //     'blog',
-  //   );
-
-  //   // Add adminId from request user
-  //   const adminId = req?.user?.id;
-
-  //   const status = BlogStatus.Publish;
-
-  //   const blogData = {
-  //     ...parsed,
-  //     slug,
-  //     image: imageLink,
-  //     adminId,
-  //     status,
-  //     publishDate: new Date(),
-  //   } as Blog;
-  //   return await this.blogService.create(blogData);
-  // }
 
   @UseGuards(AuthGuard)
   @Roles(ROLE.ADMIN)
@@ -125,8 +78,26 @@ export class BlogController {
     );
 
     const adminId = req?.user?.id;
-    const status = BlogStatus.Publish;
-    const publishDate = new Date();
+    const rawStatus = parsed?.status;
+    const normalizedStatus =
+      typeof rawStatus === 'string' ? rawStatus.trim().toLowerCase() : null;
+
+    const status =
+      normalizedStatus === 'schedule'
+        ? BlogStatus.Schedule
+        : BlogStatus.Publish;
+
+    const publishDate =
+      status === BlogStatus.Publish
+        ? new Date()
+        : (() => {
+            const value = parsed?.publishDate;
+            const date = value instanceof Date ? value : new Date(value);
+            if (Number.isNaN(date.getTime())) {
+              throw new BadRequestException('publishDate is required');
+            }
+            return date;
+          })();
 
     const blogData: any = {
       ...dtoInstance,
@@ -147,8 +118,16 @@ export class BlogController {
     @Req() req: Request & { user: any },
     @Query('page') page?: number,
     @Query('limit') limit?: number,
+    @Query('searchTerm') searchTerm?: string,
+    @Query('status') status?: BlogStatus,
   ) {
-    return this.blogService.getMyselfBlogs(req?.user?.id, page, limit);
+    return this.blogService.getMyselfBlogs(
+      req?.user?.id,
+      page,
+      limit,
+      searchTerm,
+      status,
+    );
   }
 
   @Get()
@@ -156,8 +135,9 @@ export class BlogController {
     @Query('page') page?: number,
     @Query('limit') limit?: number,
     @Query('searchTerm') searchTerm?: string,
+    @Query('status') status?: BlogStatus,
   ) {
-    return this.blogService.findAll(page, limit, searchTerm);
+    return this.blogService.findAll(page, limit, searchTerm, status); 
   }
 
   @Get(':slug')
@@ -210,8 +190,6 @@ export class BlogController {
         throw new BadRequestException(formattedErrors);
       }
     }
-
-    const adminId = req?.user?.id;
 
     const updateData: any = {};
 

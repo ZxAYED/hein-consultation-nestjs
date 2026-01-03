@@ -5,11 +5,13 @@ import {
   Controller,
   Delete,
   Get,
+  Header,
   Param,
   Patch,
   Post,
   Query,
   Req,
+  Res,
   UploadedFiles,
   UseGuards,
   UseInterceptors,
@@ -18,8 +20,9 @@ import { FilesInterceptor } from '@nestjs/platform-express';
 import { UserRole } from '@prisma/client';
 import { plainToInstance } from 'class-transformer';
 import { validateSync } from 'class-validator';
-import type { Request } from 'express';
+import type { Request, Response } from 'express';
 import multer from 'multer';
+import PDFDocument from 'pdfkit';
 import { Roles } from 'src/common/decorator/rolesDecorator';
 import { AuthGuard } from 'src/common/guards/auth/auth.guard';
 import { ROLE } from 'src/user/entities/role.entity';
@@ -58,7 +61,6 @@ export class AppointmentController {
 
     const dto = plainToInstance(CreateAppointmentDto, dtoObject);
 
-    console.log(dtoObject);
     const errors = validateSync(dto, {
       whitelist: true,
       forbidNonWhitelisted: true,
@@ -76,17 +78,92 @@ export class AppointmentController {
 
   @UseGuards(AuthGuard)
   @Roles(ROLE.CUSTOMER, ROLE.ADMIN)
+  @Header('Content-Type', 'application/pdf')
+  @Get('export/pdf')
+  async exportPdf(
+    @Req() req: Request & { user: { id: string; role: UserRole } },
+    @Res() res: Response,
+  ) {
+    const appointments = await this.appointmentService.getAppointmentsForExport(
+      req.user,
+    );
+
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="appointments-${req.user.id}.pdf"`,
+    );
+
+    const doc = new PDFDocument({ size: 'A4', margin: 50 });
+    doc.pipe(res);
+
+    doc.fontSize(18).text('Appointments', { align: 'left' });
+    doc.moveDown(0.5);
+    doc.fontSize(12).text(`User ID: ${req.user.id}`);
+    doc.moveDown();
+
+    if (!appointments.length) {
+      doc.text('No appointments found.');
+      doc.end();
+      return;
+    }
+
+    for (const appointment of appointments) {
+      doc.fontSize(12).text(`Appointment No: ${appointment.appointmentNo}`);
+      doc.text(`Service: ${appointment.serviceName}`);
+      doc.text(`Status: ${appointment.status}`);
+      doc.text(`Meeting Type: ${appointment.meetingType}`);
+      doc.text(
+        `Scheduled At: ${new Date(appointment.scheduledAt).toISOString()}`,
+      );
+      if (appointment.slot) {
+        doc.text(
+          `Slot: ${new Date(appointment.slot.startTime).toISOString()} - ${new Date(appointment.slot.endTime).toISOString()}`,
+        );
+      }
+      if (appointment.note) {
+        doc.text(`Note: ${appointment.note}`);
+      }
+      doc.moveDown();
+    }
+
+    doc.end();
+  }
+
+  @UseGuards(AuthGuard)
+  @Roles(ROLE.CUSTOMER, ROLE.ADMIN)
   @Get()
   list(
-    @Query() query: { page?: string | number; limit?: string | number , serviceName?: string , status?: string, meetingType?: string, slotId?: string, appointmentNo?: string, userId?: string },
-    
+    @Query()
+    query: {
+      page?: string | number;
+      limit?: string | number;
+      serviceName?: string;
+      status?: string;
+      meetingType?: string;
+      slotId?: string;
+      appointmentNo?: string;
+      userId?: string;
+    },
+
     @Req() req: Request & { user: { id: string; role: UserRole } },
   ) {
     const page =
       query.page !== undefined ? Math.max(1, Number(query.page)) : undefined;
     const limit =
       query.limit !== undefined ? Math.max(1, Number(query.limit)) : undefined;
-    return this.appointmentService.list({ page, limit, serviceName: query.serviceName , status: query.status, meetingType: query.meetingType, slotId: query.slotId, appointmentNo: query.appointmentNo, userId: query.userId}, req.user);
+    return this.appointmentService.list(
+      {
+        page,
+        limit,
+        serviceName: query.serviceName,
+        status: query.status,
+        meetingType: query.meetingType,
+        slotId: query.slotId,
+        appointmentNo: query.appointmentNo,
+        userId: query.userId,
+      },
+      req.user,
+    );
   }
 
   @UseGuards(AuthGuard)

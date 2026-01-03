@@ -30,16 +30,22 @@ model User {
   loginOtpExpireIn          DateTime?
   resetPasswordOtp          String?
   resetPasswordOtpExpireIn  DateTime?
+  lastPasswordChangeTime    DateTime?
+  loginTime                 DateTime?
+  registrationTime          DateTime?
   isVerified                Boolean   @default(false)
   isBlocked                 Boolean   @default(false)
   isDeleted                 Boolean   @default(false)
   createdAt                 DateTime  @default(now())
   updatedAt                 DateTime  @updatedAt
 
-  documents    Document[]
-  invoices     Invoice[]
-  appointments Appointment[]
-  blogs        Blog[]
+  documents     Document[]
+  invoices      Invoice[]
+  appointments  Appointment[]
+  blogs         Blog[]
+  notifications Notification[]
+  services      Service[]
+  comments      Comment[]
 }
 
 model ScheduleSlot {
@@ -86,6 +92,7 @@ model Appointment {
   slot      ScheduleSlot @relation(fields: [slotId], references: [id])
   documents Document[]
   invoice   Invoice?
+
   @@index([appointmentNo])
 }
 
@@ -107,23 +114,11 @@ model Document {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user        User            @relation(fields: [userId], references: [id])
-  appointment Appointment?    @relation(fields: [appointmentId], references: [id])
-  invoice     Invoice?        @relation(fields: [invoiceId], references: [id])
+  user        User         @relation(fields: [userId], references: [id])
+  appointment Appointment? @relation(fields: [appointmentId], references: [id])
+  invoice     Invoice?     @relation(fields: [invoiceId], references: [id])
   // audits      DocumentAudit[]
 }
-
-// model DocumentAudit {
-//   id            String              @id @default(uuid())
-//   documentId    String
-//   action        DocumentAuditAction
-//   performedById String
-//   metadata      Json?
-//   createdAt     DateTime            @default(now())
-
-//   document    Document @relation(fields: [documentId], references: [id])
-//   performedBy User     @relation(fields: [performedById], references: [id])
-// }
 
 model Invoice {
   id            String  @id @default(uuid())
@@ -165,7 +160,92 @@ model Blog {
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
 
-  admin User @relation(fields: [adminId], references: [id])
+  admin    User      @relation(fields: [adminId], references: [id])
+  comments Comment[]
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  userId    String
+  blogId    String
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id])
+  blog      Blog     @relation(fields: [blogId], references: [id])
+}
+
+model Activity {
+  id        String            @id @default(uuid())
+  event     NotificationEvent
+  entityId  String
+  actorId   String
+  userId    String?
+  metadata  Json?
+  createdAt DateTime          @default(now())
+}
+
+model Notification {
+  id        String            @id @default(uuid())
+  userId    String
+  event     NotificationEvent
+  title     String
+  message   String
+  isRead    Boolean           @default(false)
+  metadata  Json?
+  createdAt DateTime          @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+enum NotificationEvent {
+  DOCUMENT_UPLOADED
+  DOCUMENT_APPROVED
+  APPOINTMENT_CREATED
+  APPOINTMENT_STATUS_CHANGED
+  INVOICE_CREATED
+  INVOICE_PAID
+  BLOG_CREATED
+  ADMIN_MANUAL
+}
+
+model Service {
+  id          String          @id @default(uuid())
+  name        String
+  category    ServiceCategory
+  adminId     String
+  slug        String          @unique
+  description String
+  status      ServiceStatus
+  image       String
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  admin       User            @relation(fields: [adminId], references: [id])
+}
+
+model AdminGeneralSetting {
+  id                     String  @id @default("AdminGeneralSettingSingletonId")
+  platformName           String
+  slogan                 String
+  language               String
+  timezone               String
+  currency               String
+  logo                   String
+  isBlogModuleEnabled    Boolean @default(true)
+  isServiceModuleEnabled Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum ServiceCategory {
+  Consulting
+  Training
+}
+
+enum ServiceStatus {
+  Active
+  Inactive
 }
 
 enum BlogCategory {

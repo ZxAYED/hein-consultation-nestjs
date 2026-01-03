@@ -4,7 +4,7 @@
 		"name": "Marcus Hein ( Zayed )",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "39781146",
-		"_collection_link": "https://next-level-4-arms-team.postman.co/workspace/8e12135a-9505-41ce-8b0f-eb129435841e/collection/39781146-ad159a05-56a3-431d-955d-e0b16227b31f?action=share&source=collection_link&creator=39781146"
+		"_collection_link": "https://next-level-4-arms-team.postman.co/workspace/Team-Workspace~8e12135a-9505-41ce-8b0f-eb129435841e/collection/39781146-ad159a05-56a3-431d-955d-e0b16227b31f?action=share&source=collection_link&creator=39781146"
 	},
 	"item": [
 		{
@@ -123,7 +123,7 @@
 						"header": [
 							{
 								"key": "Authorization",
-								"value": "{{customer-access-token}}",
+								"value": "{{admin-access-token}}",
 								"type": "text"
 							}
 						],
@@ -166,6 +166,31 @@
 									"value": "",
 									"disabled": true
 								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "export  pdf",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{customer-access-token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{live-api}}/appointments/export/pdf",
+							"host": [
+								"{{live-api}}"
+							],
+							"path": [
+								"appointments",
+								"export",
+								"pdf"
 							]
 						}
 					},
@@ -239,7 +264,7 @@
 							"formdata": [
 								{
 									"key": "data",
-									"value": "{\n\n \"serviceName\":\"SAP_CONSULTING_SESSION\",\n\"slotId\": \"a82ac4b6-3580-4ee6-bb18-19531e741404\",\n  \"meetingType\": \"Virtual\",\n  \"note\": \"optional\"\n}",
+									"value": "{\n\n \"serviceName\":\"SAP_CONSULTING_SESSION\",\n\"slotId\": \"0cbe2cfc-2212-4549-98e0-99d704e74ae6\",\n  \"meetingType\": \"Virtual\",\n  \"note\": \"optional\"\n}",
 									"type": "text"
 								},
 								{
@@ -405,13 +430,13 @@
 							"formdata": [
 								{
 									"key": "data",
-									"value": "{\n  \"name\": \"Test\",\n  \"type\": \"Invoice\",\n  \"tags\": [\"a\", \"b\"],\n  \"description\": \"This is a test document\",\n  \"appointmentId\": \"44122c2e-f46f-4edc-a5b4-62a029fc158e\",\n  \"invoiceId\": null\n}\n",
+									"value": "{\n  \"name\": \"Test\",\n  \"type\": \"Invoice\",\n  \"tags\": [\"a\", \"b\"],\n  \"description\": \"This is a test document\",\n  \"appointmentId\": \"8832c9e4-814f-4545-a411-b693a3b2c21d\",\n  \"invoiceId\": null\n}\n",
 									"type": "text"
 								},
 								{
 									"key": "files",
 									"type": "file",
-									"src": "/C:/Users/Humayun/Desktop/Marcus Photo/men.jpg"
+									"src": "/D:/Projects/marcus-backend-nestjs/.gitignore"
 								}
 							]
 						},
@@ -490,6 +515,476 @@
 									"key": "tags",
 									"value": null,
 									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "invoice",
+			"item": [
+				{
+					"name": "create",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{admin-access-token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"appointmentId\": \"8832c9e4-814f-4545-a411-b693a3b2c21d\",\r\n  \"amount\": 1200,\r\n  \"status\": \"Pending\",\r\n  \"paymentType\": \"BankTransfer\",\r\n  \"issuedBy\": \"Marcus Hein GmbH\",\r\n  \"issuedAt\": \"2025-01-15T00:00:00.000Z\",\r\n  \"dueDate\": \"2025-02-15T00:00:00.000Z\"\r\n}\r\n"
+						},
+						"url": {
+							"raw": "{{live-api}}/invoices",
+							"host": [
+								"{{live-api}}"
+							],
+							"path": [
+								"invoices"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "patch",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{admin-access-token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"invoiceNo\": \"INV-2025-0002\",\r\n  \"amount\": 15020,\r\n  \"status\": \"Paid\",\r\n  \"paymentType\": \"Cash\",\r\n  \"issuedAt\": \"2025-01-20T00:00:00.000Z\",\r\n  \"dueDate\": \"2025-02-20T00:00:00.000Z\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{live-api}}/invoices/e25dd481-45d6-4978-b8e2-d0148b0da7e9",
+							"host": [
+								"{{live-api}}"
+							],
+							"path": [
+								"invoices",
+								"e25dd481-45d6-4978-b8e2-d0148b0da7e9"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get single",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{customer-access-token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{live-api}}/invoices/:id",
+							"host": [
+								"{{live-api}}"
+							],
+							"path": [
+								"invoices",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get inv user/ admin",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{admin-access-token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{live-api}}/invoices?page=1&limit=10&status=Paid&search=INV-2025&fromDate=2025-01-01&toDate=2025-01-31\n",
+							"host": [
+								"{{live-api}}"
+							],
+							"path": [
+								"invoices"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								},
+								{
+									"key": "status",
+									"value": "Paid"
+								},
+								{
+									"key": "search",
+									"value": "INV-2025"
+								},
+								{
+									"key": "fromDate",
+									"value": "2025-01-01"
+								},
+								{
+									"key": "toDate",
+									"value": "2025-01-31\n"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "kupa shamsu",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{admin-access-token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{live-api}}/invoices/a271da43-3bcb-41ec-8adc-744b31eccde9",
+							"host": [
+								"{{live-api}}"
+							],
+							"path": [
+								"invoices",
+								"a271da43-3bcb-41ec-8adc-744b31eccde9"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "notification",
+			"item": [
+				{
+					"name": "admin notific create",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{admin-access-token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"title\": \"kela mela\",\r\n  \"message\": \"Message text\",\r\n  \"broadcast\": true,\r\n  \"userIds\": [\"58f800b0-4650-40c9-8d01-a5a32e71b80a\"],\r\n  \"metadata\": { \"key\": \"value\" }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{live-api}}/admin/notifications",
+							"host": [
+								"{{live-api}}"
+							],
+							"path": [
+								"admin",
+								"notifications"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{customer-access-token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{live-api}}/notifications?page=1&limit=10&isRead=false",
+							"host": [
+								"{{live-api}}"
+							],
+							"path": [
+								"notifications"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": null,
+									"disabled": true
+								},
+								{
+									"key": "limit",
+									"value": null,
+									"disabled": true
+								},
+								{
+									"key": "event",
+									"value": null,
+									"disabled": true
+								},
+								{
+									"key": "isRead",
+									"value": null,
+									"disabled": true
+								},
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								},
+								{
+									"key": "isRead",
+									"value": "false"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "single mark as read",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{customer-access-token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{live-api}}/notifications/:id/read",
+							"host": [
+								"{{live-api}}"
+							],
+							"path": [
+								"notifications",
+								":id",
+								"read"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": null,
+									"disabled": true
+								},
+								{
+									"key": "limit",
+									"value": null,
+									"disabled": true
+								},
+								{
+									"key": "event",
+									"value": null,
+									"disabled": true
+								},
+								{
+									"key": "isRead",
+									"value": null,
+									"disabled": true
+								}
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": ""
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "mark as read all",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{customer-access-token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{live-api}}/notifications/read-all",
+							"host": [
+								"{{live-api}}"
+							],
+							"path": [
+								"notifications",
+								"read-all"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": null,
+									"disabled": true
+								},
+								{
+									"key": "limit",
+									"value": null,
+									"disabled": true
+								},
+								{
+									"key": "event",
+									"value": null,
+									"disabled": true
+								},
+								{
+									"key": "isRead",
+									"value": null,
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "dashboard",
+			"item": [
+				{
+					"name": "get stats",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{admin-access-token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{live-api}}/dashboard/stats",
+							"host": [
+								"{{live-api}}"
+							],
+							"path": [
+								"dashboard",
+								"stats"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "activities",
+			"item": [
+				{
+					"name": "admin activity create",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{admin-access-token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"title\": \"kela mela\",\r\n  \"message\": \"Message text\",\r\n  \"broadcast\": true,\r\n  \"userIds\": [\"58f800b0-4650-40c9-8d01-a5a32e71b80a\"],\r\n  \"metadata\": { \"key\": \"value\" }\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{live-api}}/admin/notifications",
+							"host": [
+								"{{live-api}}"
+							],
+							"path": [
+								"admin",
+								"notifications"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "get",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "{{customer-access-token}}",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "{{live-api}}/activities?page=1&limit=10&event=ADMIN_MANUAL&entityId=4e8f.",
+							"host": [
+								"{{live-api}}"
+							],
+							"path": [
+								"activities"
+							],
+							"query": [
+								{
+									"key": "page",
+									"value": "1"
+								},
+								{
+									"key": "limit",
+									"value": "10"
+								},
+								{
+									"key": "event",
+									"value": "ADMIN_MANUAL"
+								},
+								{
+									"key": "entityId",
+									"value": "4e8f."
 								}
 							]
 						}

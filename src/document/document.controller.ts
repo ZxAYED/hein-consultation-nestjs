@@ -95,7 +95,6 @@ export class DocumentController {
     );
 
     const totalSize = files.reduce((sum, file) => sum + (file.size ?? 0), 0);
-
     const format = this.resolveFormat(files);
 
     return this.documentService.create(
@@ -123,7 +122,7 @@ export class DocumentController {
     @Body() dto: UpdateDocumentDto,
     @Req() req: Request & { user: { id: string; role: UserRole } },
   ) {
-    return this.documentService.update(id, dto, req.user);
+    return await this.documentService.update(id, dto, req.user);
   }
 
   @UseGuards(AuthGuard)
@@ -133,7 +132,7 @@ export class DocumentController {
     @Param('id') id: string,
     @Req() req: Request & { user: { id: string; role: UserRole } },
   ) {
-    return this.documentService.remove(id, req.user);
+    return await this.documentService.remove(id, req.user);
   }
 
   private resolveFormat(files: Express.Multer.File[]) {
