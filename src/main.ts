@@ -1,10 +1,10 @@
-import { ValidationPipe } from '@nestjs/common';
+import { ValidationPipe, INestApplication } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { WsAdapter } from '@nestjs/platform-ws';
 import { GlobalExceptionFilter } from 'src/common/filters/global-exception.filter';
 import { AppModule } from './app.module';
 
-async function bootstrap() {
+export async function createNestApp(): Promise<INestApplication> {
   const app = await NestFactory.create(AppModule);
   app.useWebSocketAdapter(new WsAdapter(app));
   app.useGlobalFilters(new GlobalExceptionFilter());
@@ -29,6 +29,14 @@ async function bootstrap() {
     ],
   });
 
+  return app;
+}
+
+async function bootstrap() {
+  const app = await createNestApp();
   await app.listen(process.env.PORT || 3000);
 }
-void bootstrap();
+
+if (require.main === module) {
+  void bootstrap();
+}

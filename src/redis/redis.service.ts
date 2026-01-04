@@ -5,8 +5,9 @@ import Redis from 'ioredis';
 @Injectable()
 export class RedisService implements OnModuleInit, OnModuleDestroy {
   
-  constructor(private readonly configService: ConfigService) {}
   private client: Redis;
+
+  constructor(private readonly configService: ConfigService) {}
 
   onModuleInit() {
     // this.client = new Redis({
@@ -30,11 +31,16 @@ export class RedisService implements OnModuleInit, OnModuleDestroy {
   }
 
   getClient(): Redis {
+    if (!this.client) {
+      throw new Error('Redis client not initialized');
+    }
     return this.client;
   }
 
   async onModuleDestroy() {
-    await this.client.quit();
-    console.log('Redis client disconnected');
+    if (this.client) {
+      await this.client.quit();
+      console.log('Redis client disconnected');
+    }
   }
 }
