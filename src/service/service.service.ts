@@ -72,9 +72,10 @@ export class ServiceService {
     limit?: number,
     searchTerm?: string,
     category?: string,
+    status?: string,
   ) {
     try {
-      const cacheKey = `services:list:page=${page || 1}:limit=${limit || 10}:search=${searchTerm || 'all'}:category=${category || 'all'}`;
+      const cacheKey = `services:list:page=${page || 1}:limit=${limit || 10}:search=${searchTerm || 'all'}:category=${category || 'all'}:status=${status || 'all'}`;
 
       const result = await this.cacheUtil.getWithAutoRefresh(
         cacheKey,
@@ -90,6 +91,10 @@ export class ServiceService {
 
           if (category) {
             where.category = category;
+          }
+
+          if (status) {
+            where.status = status; // <-- Added status filter
           }
 
           const totalItems = await this.prisma.service.count({ where });

@@ -44,8 +44,9 @@ export class ServiceController {
     @Query('limit') limit?: number,
     @Query('searchTerm') searchTerm?: string,
     @Query('category') category?: string,
+    @Query('status') status?: string,
   ) {
-    return this.serviceService.findAll(page, limit, searchTerm, category);
+    return this.serviceService.findAll(page, limit, searchTerm, category, status);
   }
 
   @Get(':slug')
@@ -104,7 +105,6 @@ export class ServiceController {
       ...dtoInstance,
       image: imageLink,
       slug,
-      status: ServiceStatus.Active,
       adminId: req.user.id as string,
     };
 
