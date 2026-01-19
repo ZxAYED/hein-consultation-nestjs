@@ -82,10 +82,13 @@ Strictly speaking, it is **not a full multi-tenant SaaS** yet (there is no expli
 4. Start the server:
    - `npm run start:dev`
 
+<<<<<<< HEAD
 ## 🧵 Redis + Queue Guide
 
 - Noob-friendly step-by-step: [redis-bullmq-guide.md](file:///d:/Projects/marcus-backend-nestjs/docs/redis-bullmq-guide.md)
 
+=======
+>>>>>>> e44e0b6f450f389afc7cc284944107ef5974a19b
 ## ✅ Tests & Quality
 
 - 🧪 Unit tests:
@@ -101,3 +104,7 @@ Strictly speaking, it is **not a full multi-tenant SaaS** yet (there is no expli
 - Compose runs database migrations on startup:
   - `npx prisma migrate deploy && node dist/main.js`
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> e44e0b6f450f389afc7cc284944107ef5974a19b

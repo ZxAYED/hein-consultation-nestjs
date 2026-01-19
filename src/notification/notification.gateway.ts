@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import {
   OnGatewayConnection,
@@ -9,11 +9,17 @@ import {
 import { Notification, Prisma, UserRole } from '@prisma/client';
 import type { IncomingMessage } from 'http';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { RedisService } from 'src/redis/redis.service';
 import { Server, WebSocket } from 'ws';
 
 type ClientContext = {
   userId: string;
   role: UserRole;
+};
+
+type NotificationMessage = {
+  originId: string;
+  notification: Notification;
 };
 
 @WebSocketGateway({
@@ -28,7 +34,11 @@ type ClientContext = {
 })
 @Injectable()
 export class NotificationGateway
-  implements OnGatewayConnection, OnGatewayDisconnect
+  implements
+    OnGatewayConnection,
+    OnGatewayDisconnect,
+    OnModuleInit,
+    OnModuleDestroy
 {
   @WebSocketServer()
   server: Server;
@@ -36,23 +46,48 @@ export class NotificationGateway
   private readonly clients = new Map<WebSocket, ClientContext>();
   private readonly clientsByUser = new Map<string, Set<WebSocket>>();
   private readonly adminClients = new Set<WebSocket>();
+  private readonly instanceId = Math.random().toString(36).slice(2);
+  private readonly channel = 'notifications';
+  private pubClient?: ReturnType<RedisService['getClient']>;
+  private subClient?: ReturnType<RedisService['getClient']>;
 
   constructor(
     private readonly jwtService: JwtService,
     private readonly prisma: PrismaService,
+    private readonly redisService: RedisService,
   ) {}
+
+  async onModuleInit() {
+    try {
+      this.pubClient = this.redisService.getClient();
+      this.subClient = this.pubClient.duplicate();
+      await this.subClient.connect();
+      await this.subClient.subscribe(this.channel);
+      this.subClient.on('message', (_channel, message) => {
+        this.handleRedisMessage(message);
+      });
+    } catch {
+      // Redis is optional for single-instance use; continue without it.
+      this.pubClient = undefined;
+      this.subClient = undefined;
+    }
+  }
+
+  async onModuleDestroy() {
+    await this.subClient?.quit();
+  }
 
   async handleConnection(client: WebSocket, request?: IncomingMessage) {
     const token = this.extractToken(request);
     if (!token) {
-      this.send(client, 'auth_error', { message: 'Unauthorized' });
+      this.send(client, 'auth_error', { message: 'Unauthorized : Invalid token' });
       client.close();
       return;
     }
 
     const decoded = this.jwtService.decode(token);
     if (!decoded || typeof decoded !== 'object') {
-      this.send(client, 'auth_error', { message: 'Unauthorized' });
+      this.send(client, 'auth_error', { message: 'Unauthorized: Invalid token' });
       client.close();
       return;
     }
@@ -62,7 +97,7 @@ export class NotificationGateway
       typeof decodedRecord.id === 'string' ? decodedRecord.id : null;
 
     if (!userId) {
-      this.send(client, 'auth_error', { message: 'Unauthorized' });
+      this.send(client, 'auth_error', { message: 'Unauthorized: Invalid token' });
       client.close();
       return;
     }
@@ -74,13 +109,13 @@ export class NotificationGateway
         select: { id: true, role: true },
       });
     } catch {
-      this.send(client, 'auth_error', { message: 'Database unavailable' });
+      this.send(client, 'auth_error', { message: 'Connection failed: Database unavailable or this user is not found ' });
       client.close();
       return;
     }
 
     if (!user) {
-      this.send(client, 'auth_error', { message: 'Unauthorized' });
+      this.send(client, 'auth_error', { message: 'Unauthorized: Invalid token' });
       client.close();
       return;
     }
@@ -94,6 +129,18 @@ export class NotificationGateway
   }
 
   emitNotification(notification: Notification) {
+    if (this.pubClient) {
+      const message: NotificationMessage = {
+        originId: this.instanceId,
+        notification,
+      };
+      this.pubClient.publish(this.channel, JSON.stringify(message));
+    } else {
+      this.emitLocal(notification);
+    }
+  }
+
+  private emitLocal(notification: Notification) {
     const targets = new Set<WebSocket>();
     const userClients = this.clientsByUser.get(notification.userId);
     if (userClients) {
@@ -116,7 +163,8 @@ export class NotificationGateway
         event: true;
         title: true;
         message: true;
-        isRead: true;
+        isAdminRead: true;
+        isCustomerRead: true;
         metadata: true;
         createdAt: true;
       };
@@ -126,7 +174,8 @@ export class NotificationGateway
       event: notification.event,
       title: notification.title,
       message: notification.message,
-      isRead: notification.isRead,
+      isAdminRead: notification.isAdminRead,
+      isCustomerRead: notification.isCustomerRead,
       metadata: notification.metadata,
       createdAt: notification.createdAt,
     };
@@ -140,6 +189,18 @@ export class NotificationGateway
       if (socket.readyState === WebSocket.OPEN) {
         socket.send(message);
       }
+    }
+  }
+
+  private handleRedisMessage(message: string) {
+    try {
+      const parsed = JSON.parse(message) as NotificationMessage;
+      if (parsed.originId === this.instanceId) {
+        return;
+      }
+      this.emitLocal(parsed.notification);
+    } catch {
+      // Ignore malformed payloads.
     }
   }
 

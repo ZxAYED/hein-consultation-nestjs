@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-redundant-type-constituents */
 import {
   BadRequestException,
   ForbiddenException,
@@ -118,7 +119,11 @@ export class NotificationService {
     }
 
     if (typeof query.isRead === 'boolean') {
-      where.isRead = query.isRead;
+      if (isAdmin) {
+        where.isAdminRead = query.isRead;
+      } else {
+        where.isCustomerRead = query.isRead;
+      }
     }
 
     const totalItems = await this.prisma.notification.count({ where });
@@ -141,7 +146,12 @@ export class NotificationService {
   async markAsRead(id: string, actor: Pick<User, 'id' | 'role'>) {
     const notification = await this.prisma.notification.findUnique({
       where: { id },
-      select: { id: true, userId: true, isRead: true },
+      select: {
+        id: true,
+        userId: true,
+        isAdminRead: true,
+        isCustomerRead: true,
+      },
     });
 
     if (!notification) {
@@ -153,16 +163,27 @@ export class NotificationService {
       throw new ForbiddenException('Access denied');
     }
 
-    if (notification.isRead) {
-      return sendResponse('Notification marked as read', notification);
+    if (isAdmin) {
+      if (notification.isAdminRead) {
+        return sendResponse('Notification marked as read', notification);
+      }
+
+      const updated = await this.prisma.notification.update({
+        where: { id: notification.id },
+        data: { isAdminRead: true },
+      });
+      return sendResponse('Notification marked as read', updated);
+    } else {
+      if (notification.isCustomerRead) {
+        return sendResponse('Notification marked as read', notification);
+      }
+
+      const updated = await this.prisma.notification.update({
+        where: { id: notification.id },
+        data: { isCustomerRead: true },
+      });
+      return sendResponse('Notification marked as read', updated);
     }
-
-    const updated = await this.prisma.notification.update({
-      where: { id: notification.id },
-      data: { isRead: true },
-    });
-
-    return sendResponse('Notification marked as read', updated);
   }
 
   async markAllAsRead(actor: Pick<User, 'id' | 'role'>) {
@@ -172,8 +193,11 @@ export class NotificationService {
       : { userId: actor.id };
 
     const result = await this.prisma.notification.updateMany({
-      where: { ...where, isRead: false },
-      data: { isRead: true },
+      where: {
+        ...where,
+        ...(isAdmin ? { isAdminRead: false } : { isCustomerRead: false }),
+      },
+      data: isAdmin ? { isAdminRead: true } : { isCustomerRead: true },
     });
 
     if (!result.count) {

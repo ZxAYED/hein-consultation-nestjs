@@ -136,7 +136,7 @@ export class DashboardService {
         this.prisma.document.count(),
         this.prisma.invoice.count(),
         this.prisma.blog.count(),
-        this.prisma.notification.count({ where: { isRead: false } }),
+        this.prisma.notification.count({ where: { isAdminRead: false } }),
       ]);
 
       return {
@@ -155,7 +155,7 @@ export class DashboardService {
         this.prisma.document.count({ where: { userId: actor.id } }),
         this.prisma.invoice.count({ where: { userId: actor.id } }),
         this.prisma.notification.count({
-          where: { userId: actor.id, isRead: false },
+          where: { userId: actor.id, isCustomerRead: false },
         }),
       ]);
 

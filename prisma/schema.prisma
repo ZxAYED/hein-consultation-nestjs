@@ -191,7 +191,8 @@ model Notification {
   event     NotificationEvent
   title     String
   message   String
-  isRead    Boolean           @default(false)
+  isAdminRead    Boolean           @default(false)
+  isCustomerRead Boolean           @default(false)
   metadata  Json?
   createdAt DateTime          @default(now())
 
