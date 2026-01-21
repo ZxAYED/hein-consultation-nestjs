@@ -54,4 +54,5 @@ USER nestjs
 EXPOSE 3000
 
 # Start the application
-CMD ["node", "dist/main.js"]
+ CMD ["npm", "run", "start:prod"]
+
