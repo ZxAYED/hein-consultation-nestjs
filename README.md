@@ -104,7 +104,4 @@ Strictly speaking, it is **not a full multi-tenant SaaS** yet (there is no expli
 - Compose runs database migrations on startup:
   - `npx prisma migrate deploy && node dist/main.js`
 
-<<<<<<< HEAD
-=======
 
->>>>>>> e44e0b6f450f389afc7cc284944107ef5974a19b
